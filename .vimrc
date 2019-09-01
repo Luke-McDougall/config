@@ -28,6 +28,8 @@ set shiftwidth=4
 " Sane move to end/start of line keys
 map H ^
 map L $
+" Normal mode enter
+nnoremap <CR> i<CR><Esc>
 " Disable arrow keys
 nnoremap <up> <nop>
 nnoremap <down> <nop>
@@ -38,6 +40,8 @@ inoremap <right> <nop>
 " Left and right can switch buffers
 nnoremap <left> :bp<CR>
 nnoremap <right> :bn<CR>
+" Center search result
+nnoremap n nzz
 " <leader><leader> toggles between buffers
 nnoremap <leader><leader> <c-^>
 " Set rustc as compiler
@@ -61,8 +65,20 @@ nnoremap <Leader>v :vsp %<CR>
 " Quick save and quick savequit
 nnoremap <leader>w :w<CR>
 nnoremap <leader>q :wq<CR>
+fu! OpenGroff()
+    :w
+    :! groff -ms % -T pdf > %:r.pdf
+    :! zathura %:r.pdf & 
+endfunction
+
+fu! UpdateGroff()
+    :w
+    :! groff -ms % -T pdf > %:r.pdf
+endfunction
+
+nnoremap <Leader>o :call OpenGroff()<CR><CR>
+nnoremap <Leader>u :call UpdateGroff()<CR><CR>
 
 let g:lightline = {
             \ 'colorscheme':'seoul256'
             \}
-
