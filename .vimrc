@@ -42,6 +42,9 @@ nnoremap <left> :bp<CR>
 nnoremap <right> :bn<CR>
 " Center search result
 nnoremap n nzz
+" Vertical movement in long lines should work correctly now
+nnoremap j gj
+nnoremap k gk
 " <leader><leader> toggles between buffers
 nnoremap <leader><leader> <c-^>
 " Set rustc as compiler
@@ -67,13 +70,13 @@ nnoremap <leader>w :w<CR>
 nnoremap <leader>q :wq<CR>
 fu! OpenGroff()
     :w
-    :! groff -ms % -T pdf > %:r.pdf
+    :! groff -e -t -ms % -T pdf > %:r.pdf
     :! zathura %:r.pdf & 
 endfunction
 
 fu! UpdateGroff()
     :w
-    :! groff -ms % -T pdf > %:r.pdf
+    :! groff -e -t -ms % -T pdf > %:r.pdf
 endfunction
 
 nnoremap <Leader>o :call OpenGroff()<CR><CR>
