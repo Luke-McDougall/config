@@ -45,6 +45,14 @@ nnoremap n nzz
 " Vertical movement in long lines should work correctly now
 nnoremap j gj
 nnoremap k gk
+" This doesn't work LOL
+nnoremap <M-j> <C-d>
+nnoremap <M-k> <C-u>
+" Better split navigation keys
+nnoremap <leader>h <C-w>h
+nnoremap <leader>l <C-w>l
+nnoremap <leader>j <C-w>j
+nnoremap <leader>k <C-w>k
 " <leader><leader> toggles between buffers
 nnoremap <leader><leader> <c-^>
 " Set rustc as compiler
@@ -81,6 +89,10 @@ endfunction
 
 nnoremap <Leader>o :call OpenGroff()<CR><CR>
 nnoremap <Leader>u :call UpdateGroff()<CR><CR>
+
+" Markdown syntax settings 
+let g:markdown_fenced_languages = ['c']
+let g:markdown_syntax_conceal = 0
 
 let g:lightline = {
             \ 'colorscheme':'seoul256'
