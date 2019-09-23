@@ -18,6 +18,7 @@ set lazyredraw
 filetype plugin on
 nnoremap ,s :setlocal spell! spelllang=en_au<CR>
 set shiftwidth=4
+" Convenient code completion-esque stuff.
 :inoremap ( ()<Esc>i
 :inoremap " ""<Esc>i
 :inoremap [ []<Esc>i
@@ -25,6 +26,8 @@ set shiftwidth=4
 :inoremap {<CR> {<CR><BS>}<Esc>ko
 :inoremap {} {}<Esc>i
 :inoremap {; {};<Esc>hi<CR><Esc>O
+" Better escape key
+inoremap <C-h> <Esc>
 " Sane move to end/start of line keys
 map H ^
 map L $
@@ -37,6 +40,8 @@ inoremap <up> <nop>
 inoremap <down> <nop>
 inoremap <left> <nop>
 inoremap <right> <nop>
+" A genius came up with this, you never use semicolon in normal mode
+nnoremap ; :
 " Left and right can switch buffers
 nnoremap <left> :bp<CR>
 nnoremap <right> :bn<CR>
@@ -45,9 +50,9 @@ nnoremap n nzz
 " Vertical movement in long lines should work correctly now
 nnoremap j gj
 nnoremap k gk
-" This doesn't work LOL
-nnoremap <M-j> <C-d>
-nnoremap <M-k> <C-u>
+" Jump between blank lines for faster vertical movement
+nnoremap <C-j> }
+nnoremap <C-k> {
 " Better split navigation keys
 nnoremap <leader>h <C-w>h
 nnoremap <leader>l <C-w>l
