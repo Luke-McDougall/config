@@ -16,7 +16,7 @@ set guioptions-=T
 set backspace=2 " Backspace over newlines
 set lazyredraw
 filetype plugin on
-nnoremap ,s :setlocal spell! spelllang=en_au<CR>
+nnoremap <Leader>p :setlocal spell! spelllang=en_au<CR>
 set shiftwidth=4
 " Convenient code completion-esque stuff.
 :inoremap ( ()<Esc>i
@@ -26,8 +26,6 @@ set shiftwidth=4
 :inoremap {<CR> {<CR><BS>}<Esc>ko
 :inoremap {} {}<Esc>i
 :inoremap {; {};<Esc>hi<CR><Esc>O
-" Better escape key
-inoremap <C-h> <Esc>
 " Sane move to end/start of line keys
 map H ^
 map L $
@@ -47,6 +45,8 @@ nnoremap <left> :bp<CR>
 nnoremap <right> :bn<CR>
 " Center search result
 nnoremap n nzz
+" Make capital Y do what you'd think it would do
+nnoremap Y y$
 " Vertical movement in long lines should work correctly now
 nnoremap j gj
 nnoremap k gk
@@ -58,8 +58,12 @@ nnoremap <leader>h <C-w>h
 nnoremap <leader>l <C-w>l
 nnoremap <leader>j <C-w>j
 nnoremap <leader>k <C-w>k
-" <leader><leader> toggles between buffers
-nnoremap <leader><leader> <c-^>
+" Jump to definition under cursor
+nnoremap gd :ALEGoToDefinition<CR>
+" <leader>s search and replace shortcut
+nnoremap <leader>s :%s/
+" Jump to definition in vertical split
+map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
 " Set rustc as compiler
 set makeprg=rustc
 " Set commands for next and previous error functions
@@ -68,8 +72,6 @@ nnoremap <C-x> :cprevious<CR>
 " Compile current rust file with rustc and display any errors in quickfix
 " window
 nnoremap <F6> :make<CR>
-" Run exe of current rust file
-nnoremap <F5> :!./%:r<CR>
 " Test current rust project to see if it will build using cargo
 nnoremap <F7> :!cargo test<CR>
 " Build and run current rust project using cargo
@@ -81,19 +83,18 @@ nnoremap <Leader>v :vsp %<CR>
 " Quick save and quick savequit
 nnoremap <leader>w :w<CR>
 nnoremap <leader>q :wq<CR>
-fu! OpenGroff()
+nnoremap <leader>o :Files<CR>
+
+fu! Build()
     :w
-    :! groff -e -t -ms % -T pdf > %:r.pdf
-    :! zathura %:r.pdf & 
+    :vnew
+    :setlocal buftype=nofile
+    :setlocal bufhidden=hide
+    :setlocal noswapfile
+    :r !./build 
 endfunction
 
-fu! UpdateGroff()
-    :w
-    :! groff -e -t -ms % -T pdf > %:r.pdf
-endfunction
-
-nnoremap <Leader>o :call OpenGroff()<CR><CR>
-nnoremap <Leader>u :call UpdateGroff()<CR><CR>
+nnoremap <F5> :call Build()<CR>
 
 " Markdown syntax settings 
 let g:markdown_fenced_languages = ['c']
@@ -102,3 +103,5 @@ let g:markdown_syntax_conceal = 0
 let g:lightline = {
             \ 'colorscheme':'seoul256'
             \}
+" Ale 
+let g:ale_autocompletion_enabled = 1

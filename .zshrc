@@ -12,16 +12,21 @@ zmodload zsh/complist
 compinit
 _comp_options+=(globdots)
 
-alias ls='ls --color=always'
+alias rel='cargo run --release'
+alias ls='exa  --sort=extension --group-directories-first --color=always'
 alias c=clear
 alias vim=nvim
+alias build=./build
+alias run=./run
 alias f='nvim $(fzf)'
 alias cf=". cf"
 alias tis="zathura /home/luke/.local/share/Steam/steamapps/common/TIS-100/TIS-100\ Reference\ Manual.pdf &"
 alias 4="~/4coder/./4ed &"
+alias g="~/scripts/./games.sh"
+alias gc="git clone https://github.com/Luke-McDougall/"
 
-function tt {
-    date | time_table $1
+function i3c {
+    vim ~/.config/i3/config
 }
 
 function mpdf {

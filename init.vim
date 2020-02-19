@@ -5,6 +5,9 @@ source ~/.vimrc
 " Plugin Zone
 call plug#begin('~/.local/share/nvim/plugged')
 
+" C++ stuff
+Plug 'dense-analysis/ale'
+
 " Cool status bar 
 Plug 'itchyny/lightline.vim'
 
@@ -25,5 +28,12 @@ Plug 'Yggdroot/indentLine'
 
 " fzf plugin
 Plug '/usr/bin/fzf'
+Plug 'junegunn/fzf.vim'
+
+" Tabular for text alignment
+Plug 'godlygeek/tabular'
+
+" Better C syntax highlighting
+Plug 'justinmk/vim-syntax-extra'
 
 call plug#end()
