@@ -109,10 +109,25 @@ There are two things you can do about this warning:
 	 (dired-mode . dired-buffer-map))
 )
 ;; C mode
-(add-hook 'prog-mode-hook (lambda ()
-			    (setq c-basic-offset 4
-				  c-default-style "k&r"
-				  indent-tabs-mode nil)))
+  (setq c-basic-offset 4
+        c-default-style "k&r"
+        indent-tabs-mode nil)
+
+(defun java-custom-indent-settings ()
+  "My preferred settings for indentation of java code."
+  (c-set-offset 'substatement-open 0)
+  (c-set-offset 'case-label '+)
+  (c-set-offset 'inline-open 0)
+  (c-set-offset 'statement-case-intro 0)
+ )
+
+(add-hook 'java-mode-hook 'java-custom-indent-settings)
+;;(add-hook 'prog-mode-hook (lambda ()
+;;			    (setq c-basic-offset 4
+;;				  c-default-style '((java-mode . "k&r")
+;;                                                    (c-mode . "k&r"))
+;;				  indent-tabs-mode nil)))
+
 ;; Ido
 (use-package ido
   :init
@@ -147,6 +162,7 @@ There are two things you can do about this warning:
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (toggle-scroll-bar -1)
+(display-time-mode 1)
 
 
 ;;(global-display-line-numbers-mode t)
