@@ -60,31 +60,6 @@ There are two things you can do about this warning:
   (kill-buffer)
 )
 
-(defun dired-buffer-map ()
-  "Setup bindings for dired buffer."
-  (interactive)
-  (define-key evil-normal-state-local-map "l" 'dired-find-file)
-  (define-key evil-normal-state-local-map "h" 'dired-up-directory)
-  (define-key evil-normal-state-local-map "q" 'kill-this-buffer)
-)
-
-(defun ido-my-keys ()
-  "Add my key bindings for Ido."
-  (define-key ido-completion-map (kbd "TAB") 'ido-next-match)
-)
-
-(defun switch-theme-dark ()
-  "Pretty self explanatory dude."
-  (interactive)
-  (load-theme 'modus-vivendi)
-)
-
-(defun switch-theme-light ()
-  "Pretty self explanatory dude."
-  (interactive)
-  (load-theme 'modus-operandi)
-)
-
 ;; Evil
 (use-package evil
   :ensure t
@@ -117,6 +92,14 @@ There are two things you can do about this warning:
 )
 
 (use-package dired
+  :init
+  (defun dired-buffer-map ()
+    "Setup bindings for dired buffer."
+    (interactive)
+    (define-key evil-normal-state-local-map "l" 'dired-find-file)
+    (define-key evil-normal-state-local-map "h" 'dired-up-directory)
+    (define-key evil-normal-state-local-map "q" 'kill-this-buffer))
+
   :config
   (setq dired-recursive-copies 'always)
   (setq dired-recursive-deletes 'always)
@@ -126,15 +109,22 @@ There are two things you can do about this warning:
 	 (dired-mode . dired-buffer-map))
 )
 ;; C mode
-(setq c-basic-offset 4
-      c-default-style "k&r")
-
+(add-hook 'prog-mode-hook (lambda ()
+			    (setq c-basic-offset 4
+				  c-default-style "k&r"
+				  indent-tabs-mode nil)))
 ;; Ido
 (use-package ido
   :init
   (setq ido-enable-flex-matching t)
   (setq ido-create-new-buffer 'always)
+  (setq ido-use-virtual-buffers 'auto)
   (setq ido-everywhere t)
+
+  (defun ido-my-keys ()
+  "Add my key bindings for Ido."
+  (define-key ido-completion-map (kbd "TAB") 'ido-next-match))
+
   :config
   (add-hook 'ido-setup-hook 'ido-my-keys)
   (ido-mode 1)
@@ -161,10 +151,22 @@ There are two things you can do about this warning:
 
 ;;(global-display-line-numbers-mode t)
 ;;(setq display-line-numbers-type 'relative)
+
 (use-package modus-vivendi-theme
-  :ensure t)
+  :ensure t
+  :config
+  (defun switch-theme-dark ()
+  "Pretty self explanatory dude."
+    (interactive)
+    (load-theme 'modus-vivendi))
+)
 
 (use-package modus-operandi-theme
   :ensure t
   :config
-  (load-theme 'modus-operandi))
+  (load-theme 'modus-operandi)
+  (defun switch-theme-light ()
+    "Pretty self explanatory dude."
+    (interactive)
+    (load-theme 'modus-operandi))
+)
