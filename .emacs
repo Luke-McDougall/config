@@ -1,8 +1,17 @@
-;; Apparently the garbage collector makes start up slow in emacs
+;;; package --- Summary
+;;; Commentary:
+;;  This is my Emacs config.  My goal is to use as few external packages as possible
+;;  because I'm a minimalist freak like that.  If that was actually true I would just stick
+;;  with vim or be a real one and just fucking use nano as an IDE bro.  Still the biggest package
+;;  I use is Evil.  Vim keybindings have been seared into my subconcious and I'll never be able to
+;;  use an editor without them.
+;;; Code:
+
+;; Apparently the garbage collector makes start up slow in Emacs
 ;; this will temporarily disable it to make start up faster `gcmh-mode'
 ;; is used to reset the garbage collector at the end of this file.
 (setq gc-cons-threshold most-positive-fixnum)
-(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+
 (require 'package)
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
                     (not (gnutls-available-p))))
@@ -16,9 +25,11 @@ There are two things you can do about this warning:
   (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
   ;; and `package-pinned-packages`. Most users will not need or want to do this.
-  (add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
-  )
+  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+)
+
 (package-initialize)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -26,17 +37,24 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
+    ("3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
     (modus-operandi modus-vivendi smex flycheck use-package modus-operandi-theme modus-vivendi-theme undo-tree evil))))
+
+;; Why is this empty?
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+;; Make sure use package is installed
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
 (eval-when-compile
   (require 'use-package))
@@ -182,11 +200,11 @@ There are two things you can do about this warning:
 
 ;; Paren zone
 (electric-pair-mode 1)
-(setq show-paren-delay 0)
+(setq-default show-paren-delay 0)
 (show-paren-mode 1)
 
-;;(global-display-line-numbers-mode t)
-;;(setq display-line-numbers-type 'relative)
+(global-display-line-numbers-mode t)
+(setq-default display-line-numbers-type 'relative)
 
 (use-package modus-vivendi-theme
   :ensure t
@@ -219,3 +237,4 @@ There are two things you can do about this warning:
 (add-to-list 'load-path "~/.emacs.d/gcmh")
 (require 'gcmh)
 (gcmh-mode 1)
+;;; .emacs ends here
