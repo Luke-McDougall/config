@@ -1,3 +1,8 @@
+;; Apparently the garbage collector makes start up slow in emacs
+;; this will temporarily disable it to make start up faster `gcmh-mode'
+;; is used to reset the garbage collector at the end of this file.
+(setq gc-cons-threshold most-positive-fixnum)
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 (require 'package)
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
                     (not (gnutls-available-p))))
@@ -11,7 +16,7 @@ There are two things you can do about this warning:
   (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
   ;; and `package-pinned-packages`. Most users will not need or want to do this.
-  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+  (add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
   )
 (package-initialize)
 (custom-set-variables
@@ -21,7 +26,7 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
+    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
@@ -75,30 +80,30 @@ There are two things you can do about this warning:
 	  				(evil-edit "~/.emacs")))
 	  (evil-mode 1)
   :bind (:map evil-normal-state-map
-	      ("H"         . 'evil-first-non-blank-of-visual-line)
-	      ("L"         . 'evil-end-of-visual-line)
-	      ("SPC h"     . 'evil-window-left)
-	      ("SPC l"     . 'evil-window-right)
-	      ("SPC k"     . 'evil-window-up)
-	      ("SPC j"     . 'evil-window-down)
-	      ("SPC w v"   . 'evil-window-vsplit)
-	      ("SPC w h"   . 'evil-window-split)
-	      ("SPC w q"   . 'delete-window)
-	      ("SPC b s"   . 'switch-to-buffer)
-	      ("SPC b e"   . 'eval-buffer)
-	      ("SPC b q"   . 'kill-this-buffer)
-	      ("SPC b x"   . 'save-and-kill-focused-buffer)
-	      ("SPC f r"   . 'ido-find-recent-file)
-	      ("SPC SPC"   . 'ido-find-file)
-	      ("SPC e n"   . 'flycheck-next-error)
-	      ("SPC e p"   . 'flycheck-previous-error)
-	      ("C-j"       . 'evil-forward-paragraph)
-	      ("C-k"       . 'evil-backward-paragraph)
-	      ([left]      . 'evil-prev-buffer)
-	      ([right]     . 'evil-next-buffer)
-	      (";"         . 'evil-ex)
+	      ("H"       . 'evil-first-non-blank-of-visual-line)
+	      ("L"       . 'evil-end-of-visual-line)
+	      ("SPC h"   . 'evil-window-left)
+	      ("SPC l"   . 'evil-window-right)
+	      ("SPC k"   . 'evil-window-up)
+	      ("SPC j"   . 'evil-window-down)
+	      ("SPC w v" . 'evil-window-vsplit)
+	      ("SPC w h" . 'evil-window-split)
+	      ("SPC w q" . 'delete-window)
+	      ("SPC b s" . 'switch-to-buffer)
+	      ("SPC b e" . 'eval-buffer)
+	      ("SPC b q" . 'kill-this-buffer)
+	      ("SPC b x" . 'save-and-kill-focused-buffer)
+	      ("SPC f r" . 'ido-find-recent-file)
+	      ("SPC SPC" . 'ido-find-file)
+	      ("SPC e n" . 'flycheck-next-error)
+	      ("SPC e p" . 'flycheck-previous-error)
+	      ("C-j"     . 'evil-forward-paragraph)
+	      ("C-k"     . 'evil-backward-paragraph)
+	      ([left]    . 'evil-prev-buffer)
+	      ([right]   . 'evil-next-buffer)
+	      (";"       . 'evil-ex)
 	      :map evil-insert-state-map
-	      ("C-j"       . 'jump-to-closing-paren)
+	      ("C-j"     . 'jump-to-closing-paren)
           )
 )
 
@@ -119,10 +124,11 @@ There are two things you can do about this warning:
 	 (dired-mode . hl-line-mode)
 	 (dired-mode . dired-buffer-map))
 )
+
 ;; C mode
-(setq c-basic-offset 4
-      c-default-style "k&r"
-      indent-tabs-mode nil)
+(setq-default indent-tabs-mode nil)
+(setq-default c-basic-offset 4)
+(setq-default c-default-style "k&r")
 
 (defun java-custom-indent-settings ()
   "My preferred settings for indentation of java code."
@@ -130,7 +136,7 @@ There are two things you can do about this warning:
   (c-set-offset 'case-label '+)
   (c-set-offset 'inline-open 0)
   (c-set-offset 'statement-case-intro 0)
- )
+)
 
 (add-hook 'java-mode-hook 'java-custom-indent-settings)
 
@@ -147,6 +153,7 @@ There are two things you can do about this warning:
 (use-package ido
   :init
   (setq ido-enable-flex-matching t)
+  (setq ido-auto-merge-work-directories-length -1)
   (setq ido-create-new-buffer 'always)
   (setq ido-use-virtual-buffers 'auto)
   (setq ido-everywhere t)
@@ -178,8 +185,8 @@ There are two things you can do about this warning:
 (setq show-paren-delay 0)
 (show-paren-mode 1)
 
-(global-display-line-numbers-mode t)
-(setq display-line-numbers-type 'relative)
+;;(global-display-line-numbers-mode t)
+;;(setq display-line-numbers-type 'relative)
 
 (use-package modus-vivendi-theme
   :ensure t
@@ -207,3 +214,8 @@ There are two things you can do about this warning:
 (toggle-scroll-bar -1)
 (display-time-mode 1)
 (load-theme 'modus-vivendi)
+
+;; Turn the garbage collector back on
+(add-to-list 'load-path "~/.emacs.d/gcmh")
+(require 'gcmh)
+(gcmh-mode 1)
