@@ -11,6 +11,7 @@
 ;; this will temporarily disable it to make start up faster `gcmh-mode'
 ;; is used to reset the garbage collector at the end of this file.
 (setq gc-cons-threshold most-positive-fixnum)
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 
 (require 'package)
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
@@ -25,7 +26,7 @@ There are two things you can do about this warning:
   (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
   ;; and `package-pinned-packages`. Most users will not need or want to do this.
-  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+  (add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
 )
 
 (package-initialize)
@@ -37,11 +38,11 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
+    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (modus-operandi modus-vivendi smex flycheck use-package modus-operandi-theme modus-vivendi-theme undo-tree evil))))
+    (dashboard all-the-icons modus-operandi modus-vivendi smex flycheck use-package modus-operandi-theme modus-vivendi-theme undo-tree evil))))
 
 ;; Why is this empty?
 (custom-set-faces
@@ -125,14 +126,21 @@ There are two things you can do about this warning:
           )
 )
 
+(use-package dired-subtree
+  :ensure t
+  :init (setq dired-subtree-line-prefix "--"))
+
 (use-package dired
   :init
   (defun dired-buffer-map ()
     "Setup bindings for dired buffer."
     (interactive)
-    (define-key evil-normal-state-local-map "l" 'dired-find-file)
-    (define-key evil-normal-state-local-map "h" 'dired-up-directory)
-    (define-key evil-normal-state-local-map "q" 'kill-this-buffer))
+    (define-key evil-normal-state-local-map "l" 'dired-subtree-insert)
+    (define-key evil-normal-state-local-map "h" 'dired-subtree-remove)
+    (define-key evil-normal-state-local-map "q" 'kill-this-buffer)
+    (define-key evil-normal-state-local-map (kbd "TAB") 'dired-subtree-cycle)
+    (define-key evil-normal-state-local-map (kbd "C-j") 'dired-subtree-down)
+    (define-key evil-normal-state-local-map (kbd "C-k") 'dired-subtree-up))
 
   :config
   (setq dired-recursive-copies 'always)
@@ -196,6 +204,21 @@ There are two things you can do about this warning:
   :ensure t
   :init
   (global-set-key (kbd "M-x") 'smex)
+)
+
+(use-package all-the-icons
+  :ensure t)
+
+(use-package dashboard
+  :ensure t
+  :init
+  (setq dashboard-banner-logo-title "Emacs? More like peemacs LOL")
+  (setq dashboard-center-content t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-items '((recents . 10)))
+  :config
+  (dashboard-setup-startup-hook)
+  (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 )
 
 ;; Paren zone
