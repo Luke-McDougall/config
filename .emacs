@@ -11,7 +11,7 @@
 ;; this will temporarily disable it to make start up faster `gcmh-mode'
 ;; is used to reset the garbage collector at the end of this file.
 (setq gc-cons-threshold most-positive-fixnum)
-(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+;;(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 
 (require 'package)
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
@@ -26,7 +26,7 @@ There are two things you can do about this warning:
   (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
   ;; and `package-pinned-packages`. Most users will not need or want to do this.
-  (add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
 )
 
 (package-initialize)
@@ -38,11 +38,11 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
+    ("3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (dashboard all-the-icons modus-operandi modus-vivendi smex flycheck use-package modus-operandi-theme modus-vivendi-theme undo-tree evil))))
+    (dashboard all-the-icons modus-operandi modus-vivendi smex use-package modus-operandi-theme modus-vivendi-theme undo-tree evil))))
 
 ;; Why is this empty?
 (custom-set-faces
@@ -59,14 +59,6 @@ There are two things you can do about this warning:
 
 (eval-when-compile
   (require 'use-package))
-
-
-(use-package flycheck
-  :ensure t
-  :init
-  (setq flycheck-standard-error-navigation nil)
-  (global-flycheck-mode)
-)
 
 (defun jump-to-closing-paren ()
   "Pretty self explanatory dude."
@@ -88,6 +80,18 @@ There are two things you can do about this warning:
   (kill-buffer)
 )
 
+(defun kill-all-buffers ()
+  "It kills all the buffers."
+  (interactive)
+  (mapc 'kill-buffer (buffer-list)))
+
+(defun open-terminal-in-default-directory ()
+  "Opens a terminal (alacritty) in the default-directory of the current buffer."
+  (interactive)
+  (setq command (concat "alacritty --working-directory " default-directory))
+  (shell-command command)
+)
+
 ;; Evil
 (use-package evil
   :ensure t
@@ -99,30 +103,35 @@ There are two things you can do about this warning:
 	  				(evil-edit "~/.emacs")))
 	  (evil-mode 1)
   :bind (:map evil-normal-state-map
-	      ("H"       . 'evil-first-non-blank-of-visual-line)
-	      ("L"       . 'evil-end-of-visual-line)
-	      ("SPC h"   . 'evil-window-left)
-	      ("SPC l"   . 'evil-window-right)
-	      ("SPC k"   . 'evil-window-up)
-	      ("SPC j"   . 'evil-window-down)
-	      ("SPC w v" . 'evil-window-vsplit)
-	      ("SPC w h" . 'evil-window-split)
-	      ("SPC w q" . 'delete-window)
-	      ("SPC b s" . 'switch-to-buffer)
-	      ("SPC b e" . 'eval-buffer)
-	      ("SPC b q" . 'kill-this-buffer)
-	      ("SPC b x" . 'save-and-kill-focused-buffer)
-	      ("SPC f r" . 'ido-find-recent-file)
-	      ("SPC SPC" . 'ido-find-file)
-	      ("SPC e n" . 'flycheck-next-error)
-	      ("SPC e p" . 'flycheck-previous-error)
-	      ("C-j"     . 'evil-forward-paragraph)
-	      ("C-k"     . 'evil-backward-paragraph)
-	      ([left]    . 'evil-prev-buffer)
-	      ([right]   . 'evil-next-buffer)
-	      (";"       . 'evil-ex)
+	      ("H"         . 'evil-first-non-blank-of-visual-line)
+	      ("L"         . 'evil-end-of-visual-line)
+	      ("SPC h"     . 'evil-window-left)
+	      ("SPC l"     . 'evil-window-right)
+	      ("SPC k"     . 'evil-window-up)
+	      ("SPC j"     . 'evil-window-down)
+	      ("SPC w v"   . 'evil-window-vsplit)
+	      ("SPC w h"   . 'evil-window-split)
+	      ("SPC w q"   . 'delete-window)
+	      ("SPC w w"   . 'delete-other-windows)
+	      ("SPC b s"   . 'switch-to-buffer)
+	      ("SPC b e"   . 'eval-buffer)
+	      ("SPC b q"   . 'kill-this-buffer)
+	      ("SPC b k a" . 'kill-all-buffers)
+	      ("SPC b x"   . 'save-and-kill-focused-buffer)
+	      ("SPC f r"   . 'ido-find-recent-file)
+	      ("SPC SPC"   . 'ido-find-file)
+	      ("SPC \r"    . 'open-terminal-in-default-directory)
+	      ("SPC e n"   . 'next-error)
+	      ("SPC e p"   . 'previous-error)
+	      ("SPC d"     . 'dired)
+	      ("C-j"       . 'evil-forward-paragraph)
+	      ("C-k"       . 'evil-backward-paragraph)
+          ("<f5>"      . 'compile)
+	      ([left]      . 'evil-prev-buffer)
+	      ([right]     . 'evil-next-buffer)
+	      (";"         . 'evil-ex)
 	      :map evil-insert-state-map
-	      ("C-j"     . 'jump-to-closing-paren)
+	      ("C-j"       . 'jump-to-closing-paren)
           )
 )
 
