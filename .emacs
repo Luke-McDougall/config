@@ -1,11 +1,8 @@
-;;; package --- Summary
-;;; Commentary:
 ;;  This is my Emacs config.  My goal is to use as few external packages as possible
 ;;  because I'm a minimalist freak like that.  If that was actually true I would just stick
 ;;  with vim or be a real one and just fucking use nano as an IDE bro.  Still the biggest package
 ;;  I use is Evil.  Vim keybindings have been seared into my subconcious and I'll never be able to
 ;;  use an editor without them.
-;;; Code:
 
 ;; Apparently the garbage collector makes start up slow in Emacs
 ;; this will temporarily disable it to make start up faster `gcmh-mode'
@@ -269,4 +266,3 @@ There are two things you can do about this warning:
 (add-to-list 'load-path "~/.emacs.d/gcmh")
 (require 'gcmh)
 (gcmh-mode 1)
-;;; .emacs ends here
