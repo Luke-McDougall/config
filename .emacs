@@ -27,6 +27,9 @@ There are two things you can do about this warning:
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(completion-ignored-extensions
+   (quote
+    (".last" ".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/" ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem" ".x86f" ".sparcf" ".dfsl" ".pfsl" ".d64fsl" ".p64fsl" ".lx64fsl" ".lx32fsl" ".dx64fsl" ".dx32fsl" ".fx64fsl" ".fx32fsl" ".sx64fsl" ".sx32fsl" ".wx64fsl" ".wx32fsl" ".fasl" ".ufsl" ".fsl" ".dxl" ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".pyc" ".pyo")))
  '(custom-safe-themes
    (quote
     ("3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
@@ -87,6 +90,11 @@ There are two things you can do about this warning:
 (use-package evil
   :ensure t
   :init (setq evil-vsplit-window-right t)
+  (defun my-center-line (&rest _)
+    (evil-scroll-line-to-center nil)
+  )
+  (advice-add 'evil-search-next :after #'my-center-line)
+
   :config (evil-ex-define-cmd "light" 'switch-theme-light)
 	  (evil-ex-define-cmd "dark" 'switch-theme-dark)
 	  (evil-ex-define-cmd "config" '(lambda ()
@@ -105,11 +113,15 @@ There are two things you can do about this warning:
 	      ("SPC w q"   . 'delete-window)
 	      ("SPC w w"   . 'delete-other-windows)
 	      ("SPC b s"   . 'switch-to-buffer)
+	      ("SPC b i"   . 'ibuffer-other-window)
 	      ("SPC b e"   . 'eval-buffer)
 	      ("SPC b q"   . 'kill-this-buffer)
 	      ("SPC b k a" . 'kill-all-buffers)
 	      ("SPC b x"   . 'save-and-kill-focused-buffer)
 	      ("SPC f r"   . 'ido-find-recent-file)
+	      ("SPC f o"   . 'find-file-other-window)
+	      ("SPC f f"   . 'ido-find-file)
+	      ("SPC f l"   . 'find-library)
 	      ("SPC SPC"   . 'ido-find-file)
 	      ("SPC \r"    . 'open-terminal-in-default-directory)
 	      ("SPC e n"   . 'next-error)
@@ -126,9 +138,28 @@ There are two things you can do about this warning:
           )
 )
 
+(use-package window
+  :init
+  (setq display-buffer-alist
+        '(("\\*Ibuffer*"
+           (display-buffer-in-side-window)
+           (window-height . 0.2)
+           (side . bottom)
+           (slot . 0))))
+  :bind (("<f8>" . window-toggle-side-windows))
+)
+
 (use-package which-key
   :ensure t
   :init (which-key-mode))
+
+(use-package ibuffer
+  :init (setq ibuffer-expert t)
+  :bind (:map ibuffer-mode-map
+              ("j" . 'ibuffer-forward-line)
+              ("k" . 'ibuffer-backward-line))
+              ("J" . 'ibuffer-jump-to-buffer)
+)
 
 (use-package dired-subtree
   :ensure t
@@ -140,9 +171,11 @@ There are two things you can do about this warning:
     "Setup bindings for dired buffer."
     (interactive)
     (local-unset-key (kbd "SPC"))
+    (local-unset-key (kbd "\r"))
     (define-key evil-normal-state-local-map "l" 'dired-subtree-insert)
     (define-key evil-normal-state-local-map "h" 'dired-subtree-remove)
     (define-key evil-normal-state-local-map "q" 'kill-this-buffer)
+    (define-key evil-normal-state-local-map (kbd "\r") 'dired-find-file)
     (define-key evil-normal-state-local-map (kbd "TAB") 'dired-subtree-cycle)
     (define-key evil-normal-state-local-map (kbd "C-j") 'dired-subtree-down)
     (define-key evil-normal-state-local-map (kbd "C-k") 'dired-subtree-up))
@@ -157,7 +190,7 @@ There are two things you can do about this warning:
     (with-current-buffer dir
       (rename-buffer "*Dired-Side*"))
     (other-window 1)
-    )
+  )
 
   :config
   (setq dired-recursive-copies 'always)
@@ -210,16 +243,19 @@ There are two things you can do about this warning:
   (setq ido-auto-merge-work-directories-length -1)
   (setq ido-create-new-buffer 'always)
   (setq ido-use-virtual-buffers 'auto)
+  (setq ido-ignore-extensions t)
   (setq ido-everywhere t)
 
   (defun ido-my-keys ()
-  "Add my key bindings for Ido."
-  (define-key ido-completion-map (kbd "TAB") 'ido-next-match))
+    "Add my key bindings for Ido."
+    (define-key ido-completion-map (kbd "TAB") 'ido-next-match))
 
   (defun ido-find-recent-file ()
     "Interactively open a recent file."
     (interactive)
-    (let ((file (ido-completing-read "Choose recent file: " recentf-list nil t)))
+    (let ((file
+           (ido-completing-read "Choose recent file: "
+                                (mapcar 'abbreviate-file-name recentf-list ) nil t)))
       (when file
 	(find-file file))))
 
