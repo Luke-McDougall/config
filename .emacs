@@ -1,9 +1,3 @@
-;;  This is my Emacs config.  My goal is to use as few external packages as possible
-;;  because I'm a minimalist freak like that.  If that was actually true I would just stick
-;;  with vim or be a real one and just fucking use nano as an IDE bro.  Still the biggest package
-;;  I use is Evil.  Vim keybindings have been seared into my subconcious and I'll never be able to
-;;  use an editor without them.
-
 ;; Apparently the garbage collector makes start up slow in Emacs
 ;; this will temporarily disable it to make start up faster `gcmh-mode'
 ;; is used to reset the garbage collector at the end of this file.
@@ -35,12 +29,11 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
- '(doom-modeline-height 20)
+    ("3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (diredfl async doom-modeline which-key dashboard all-the-icons modus-operandi modus-vivendi smex use-package modus-operandi-theme modus-vivendi-theme undo-tree evil))))
+    (async which-key all-the-icons modus-operandi modus-vivendi smex use-package modus-operandi-theme modus-vivendi-theme undo-tree evil))))
 
 ;; Why is this empty?
 (custom-set-faces
@@ -160,7 +153,7 @@ There are two things you can do about this warning:
     (display-buffer-in-side-window dir
                                    `((side . left)
                                      (slot . -1)
-                                     (window-width . 0.2)))
+                                     (window-width . 0.16)))
     (with-current-buffer dir
       (rename-buffer "*Dired-Side*"))
     (other-window 1)
@@ -197,6 +190,9 @@ There are two things you can do about this warning:
 )
 
 (add-hook 'java-mode-hook 'java-custom-indent-settings)
+
+(use-package rust-mode
+  :ensure t)
 
 ;; Recentf
 (use-package recentf
@@ -240,18 +236,6 @@ There are two things you can do about this warning:
 
 (use-package all-the-icons
   :ensure t)
-
-(use-package dashboard
-  :ensure t
-  :init
-  (setq dashboard-banner-logo-title "Emacs? More like peemacs LOL")
-  (setq dashboard-center-content t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-items '((recents . 10)))
-  :config
-  (dashboard-setup-startup-hook)
-  (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
-)
 
 ;; Paren zone
 (electric-pair-mode 1)
