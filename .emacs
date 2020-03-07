@@ -32,7 +32,7 @@ There are two things you can do about this warning:
     (".last" ".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/" ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem" ".x86f" ".sparcf" ".dfsl" ".pfsl" ".d64fsl" ".p64fsl" ".lx64fsl" ".lx32fsl" ".dx64fsl" ".dx32fsl" ".fx64fsl" ".fx32fsl" ".sx64fsl" ".sx32fsl" ".wx64fsl" ".wx32fsl" ".fasl" ".ufsl" ".fsl" ".dxl" ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".pyc" ".pyo")))
  '(custom-safe-themes
    (quote
-    ("3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
+    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
@@ -89,7 +89,8 @@ There are two things you can do about this warning:
 ;; Evil
 (use-package evil
   :ensure t
-  :init (setq evil-vsplit-window-right t)
+  :init (setq evil-vsplit-window-right t
+              evil-emacs-state-modes nil)
   (defun my-center-line (&rest _)
     (evil-scroll-line-to-center nil)
   )
@@ -155,10 +156,14 @@ There are two things you can do about this warning:
 
 (use-package ibuffer
   :init (setq ibuffer-expert t)
-  :bind (:map ibuffer-mode-map
-              ("j" . 'ibuffer-forward-line)
-              ("k" . 'ibuffer-backward-line))
-              ("J" . 'ibuffer-jump-to-buffer)
+  (defun ibuffer-buffer-map ()
+    (local-unset-key (kbd "SPC"))
+    (define-key 'evil-normal-state-local-map (kbd "J") 'ibuffer-jump-to-buffer)
+    (define-key 'evil-normal-state-local-map (kbd "j") 'ibuffer-forward-line)
+    (define-key 'evil-normal-state-local-map (kbd "k") 'ibuffer-backward-line)
+    (define-key 'evil-normal-state-local-map (kbd "q") 'kill-this-buffer)
+  )
+  :hook ((ibuffer . ibuffer-buffer-map))
 )
 
 (use-package dired-subtree
@@ -255,7 +260,7 @@ There are two things you can do about this warning:
     (interactive)
     (let ((file
            (ido-completing-read "Choose recent file: "
-                                (mapcar 'abbreviate-file-name recentf-list ) nil t)))
+                                (mapcar 'abbreviate-file-name recentf-list) nil t)))
       (when file
 	(find-file file))))
 
@@ -305,7 +310,6 @@ There are two things you can do about this warning:
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (toggle-scroll-bar -1)
-(display-time-mode 1)
 (load-theme 'modus-vivendi)
 
 ;; Turn the garbage collector back on
