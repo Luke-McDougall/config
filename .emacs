@@ -8,7 +8,7 @@
 ;; this will temporarily disable it to make start up faster `gcmh-mode'
 ;; is used to reset the garbage collector at the end of this file.
 (setq gc-cons-threshold most-positive-fixnum)
-;;(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 
 (require 'package)
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
@@ -23,7 +23,7 @@ There are two things you can do about this warning:
   (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
   ;; and `package-pinned-packages`. Most users will not need or want to do this.
-  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+  (add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
 )
 
 (package-initialize)
@@ -35,11 +35,12 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
+    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
+ '(doom-modeline-height 20)
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
-    (dashboard all-the-icons modus-operandi modus-vivendi smex use-package modus-operandi-theme modus-vivendi-theme undo-tree evil))))
+    (diredfl async doom-modeline which-key dashboard all-the-icons modus-operandi modus-vivendi smex use-package modus-operandi-theme modus-vivendi-theme undo-tree evil))))
 
 ;; Why is this empty?
 (custom-set-faces
@@ -120,10 +121,10 @@ There are two things you can do about this warning:
 	      ("SPC \r"    . 'open-terminal-in-default-directory)
 	      ("SPC e n"   . 'next-error)
 	      ("SPC e p"   . 'previous-error)
-	      ("SPC d"     . 'dired)
+	      ("SPC d"     . 'open-dired-in-side-window)
 	      ("C-j"       . 'evil-forward-paragraph)
 	      ("C-k"       . 'evil-backward-paragraph)
-          ("<f5>"      . 'compile)
+              ("<f5>"      . 'compile)
 	      ([left]      . 'evil-prev-buffer)
 	      ([right]     . 'evil-next-buffer)
 	      (";"         . 'evil-ex)
@@ -131,6 +132,10 @@ There are two things you can do about this warning:
 	      ("C-j"       . 'jump-to-closing-paren)
           )
 )
+
+(use-package which-key
+  :ensure t
+  :init (which-key-mode))
 
 (use-package dired-subtree
   :ensure t
@@ -141,6 +146,7 @@ There are two things you can do about this warning:
   (defun dired-buffer-map ()
     "Setup bindings for dired buffer."
     (interactive)
+    (local-unset-key (kbd "SPC"))
     (define-key evil-normal-state-local-map "l" 'dired-subtree-insert)
     (define-key evil-normal-state-local-map "h" 'dired-subtree-remove)
     (define-key evil-normal-state-local-map "q" 'kill-this-buffer)
@@ -148,14 +154,34 @@ There are two things you can do about this warning:
     (define-key evil-normal-state-local-map (kbd "C-j") 'dired-subtree-down)
     (define-key evil-normal-state-local-map (kbd "C-k") 'dired-subtree-up))
 
+  (defun open-dired-in-side-window ()
+    (interactive)
+    (setq dir (if (eq (vc-root-dir) nil) (dired-noselect default-directory) (dired-noselect (vc-root-dir))))
+    (display-buffer-in-side-window dir
+                                   `((side . left)
+                                     (slot . -1)
+                                     (window-width . 0.2)))
+    (with-current-buffer dir
+      (rename-buffer "*Dired-Side*"))
+    (other-window 1)
+    )
+
   :config
   (setq dired-recursive-copies 'always)
   (setq dired-recursive-deletes 'always)
+  (setq dired-delete-by-moving-to-trash t)
   (setq dired-listing-switches "-AFlv --group-directories-first")
   :hook ((dired-mode . dired-hide-details-mode)
 	 (dired-mode . hl-line-mode)
 	 (dired-mode . dired-buffer-map))
 )
+
+(use-package async
+  :ensure t)
+
+(use-package dired-async
+  :after (dired async)
+  :hook (dired-mode . dired-async-mode))
 
 ;; C mode
 (setq-default indent-tabs-mode nil)
