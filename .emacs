@@ -32,7 +32,7 @@ There are two things you can do about this warning:
     (".last" ".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/" ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem" ".x86f" ".sparcf" ".dfsl" ".pfsl" ".d64fsl" ".p64fsl" ".lx64fsl" ".lx32fsl" ".dx64fsl" ".dx32fsl" ".fx64fsl" ".fx32fsl" ".sx64fsl" ".sx32fsl" ".wx64fsl" ".wx32fsl" ".fasl" ".ufsl" ".fsl" ".dxl" ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".pyc" ".pyo")))
  '(custom-safe-themes
    (quote
-    ("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
+    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
@@ -86,7 +86,7 @@ There are two things you can do about this warning:
   (shell-command command)
 )
 
-;; Evil
+;; Evil-mode
 (use-package evil
   :ensure t
   :init (setq evil-vsplit-window-right t
@@ -95,8 +95,8 @@ There are two things you can do about this warning:
 
   ;; Center point after any jumps
   (defun my-center-line (&rest _)
-    (evil-scroll-line-to-center nil)
-  )
+    (evil-scroll-line-to-center nil))
+
   (advice-add 'evil-search-next :after #'my-center-line)
   (advice-add 'evil-jump-forward :after #'my-center-line)
   (advice-add 'evil-jump-backward :after #'my-center-line)
@@ -120,7 +120,7 @@ There are two things you can do about this warning:
 	      ("SPC w k"   . 'evil-window-up)
 	      ("SPC w j"   . 'evil-window-down)
 	      ("SPC w v"   . 'evil-window-vsplit)
-	      ("SPC w h"   . 'evil-window-split)
+	      ("SPC w s"   . 'evil-window-split)
 	      ("SPC w q"   . 'delete-window)
 	      ("SPC w w"   . 'delete-other-windows)
 
@@ -169,6 +169,21 @@ There are two things you can do about this warning:
            (side . bottom)
            (slot . 0))))
   :bind (("<f8>" . window-toggle-side-windows))
+)
+
+(use-package emacs
+  :config
+  (setq mode-line-percent-position nil)
+  (setq-default mode-line-format
+                '("%e"
+                  mode-line-front-space
+                  "%I "
+                  "%b%&"
+                  "  "
+                  buffer-file-truename
+                  "  "
+                  mode-name
+                  mode-line-end-spaces))
 )
 
 (use-package which-key
