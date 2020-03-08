@@ -32,7 +32,7 @@ There are two things you can do about this warning:
     (".last" ".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/" ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem" ".x86f" ".sparcf" ".dfsl" ".pfsl" ".d64fsl" ".p64fsl" ".lx64fsl" ".lx32fsl" ".dx64fsl" ".dx32fsl" ".fx64fsl" ".fx32fsl" ".sx64fsl" ".sx32fsl" ".wx64fsl" ".wx32fsl" ".fasl" ".ufsl" ".fsl" ".dxl" ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".pyc" ".pyo")))
  '(custom-safe-themes
    (quote
-    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
+    ("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
@@ -90,11 +90,16 @@ There are two things you can do about this warning:
 (use-package evil
   :ensure t
   :init (setq evil-vsplit-window-right t
+              evil-split-window-below t
               evil-emacs-state-modes nil)
+
+  ;; Center point after any jumps
   (defun my-center-line (&rest _)
     (evil-scroll-line-to-center nil)
   )
   (advice-add 'evil-search-next :after #'my-center-line)
+  (advice-add 'evil-jump-forward :after #'my-center-line)
+  (advice-add 'evil-jump-backward :after #'my-center-line)
 
   :config (evil-ex-define-cmd "light" 'switch-theme-light)
 	  (evil-ex-define-cmd "dark" 'switch-theme-dark)
@@ -103,33 +108,49 @@ There are two things you can do about this warning:
 	  				(evil-edit "~/.emacs")))
 	  (evil-mode 1)
   :bind (:map evil-normal-state-map
+              ;; Movement commands
 	      ("H"         . 'evil-first-non-blank-of-visual-line)
 	      ("L"         . 'evil-end-of-visual-line)
-	      ("SPC h"     . 'evil-window-left)
-	      ("SPC l"     . 'evil-window-right)
-	      ("SPC k"     . 'evil-window-up)
-	      ("SPC j"     . 'evil-window-down)
+	      ("C-j"       . 'evil-forward-paragraph)
+	      ("C-k"       . 'evil-backward-paragraph)
+
+              ;; prefix-w for 'window' commands
+	      ("SPC w h"   . 'evil-window-left)
+	      ("SPC w l"   . 'evil-window-right)
+	      ("SPC w k"   . 'evil-window-up)
+	      ("SPC w j"   . 'evil-window-down)
 	      ("SPC w v"   . 'evil-window-vsplit)
 	      ("SPC w h"   . 'evil-window-split)
 	      ("SPC w q"   . 'delete-window)
 	      ("SPC w w"   . 'delete-other-windows)
+
+              ;; prefix-b for 'buffer' commands
 	      ("SPC b s"   . 'switch-to-buffer)
 	      ("SPC b i"   . 'ibuffer-other-window)
 	      ("SPC b e"   . 'eval-buffer)
 	      ("SPC b q"   . 'kill-this-buffer)
 	      ("SPC b k a" . 'kill-all-buffers)
 	      ("SPC b x"   . 'save-and-kill-focused-buffer)
+
+              ;; Prefix-f for 'find' commands
 	      ("SPC f r"   . 'ido-find-recent-file)
 	      ("SPC f o"   . 'find-file-other-window)
 	      ("SPC f f"   . 'ido-find-file)
 	      ("SPC f l"   . 'find-library)
+
+              ;; prefix-e for 'error' commands
+              ("SPC e n"   . 'next-error)
+	      ("SPC e p"   . 'previous-error)
+
+              ;; prefix-j for 'jump' commands
+              ("SPC j n"   . 'evil-jump-forward)
+              ("SPC j p"   . 'evil-jump-backward)
+
+              ;; Miscellaneous
 	      ("SPC SPC"   . 'ido-find-file)
 	      ("SPC \r"    . 'open-terminal-in-default-directory)
-	      ("SPC e n"   . 'next-error)
-	      ("SPC e p"   . 'previous-error)
 	      ("SPC d"     . 'open-dired-in-side-window)
-	      ("C-j"       . 'evil-forward-paragraph)
-	      ("C-k"       . 'evil-backward-paragraph)
+	      ("SPC o"     . 'occur)
               ("<f5>"      . 'compile)
 	      ([left]      . 'evil-prev-buffer)
 	      ([right]     . 'evil-next-buffer)
@@ -158,12 +179,26 @@ There are two things you can do about this warning:
   :init (setq ibuffer-expert t)
   (defun ibuffer-buffer-map ()
     (local-unset-key (kbd "SPC"))
-    (define-key 'evil-normal-state-local-map (kbd "J") 'ibuffer-jump-to-buffer)
-    (define-key 'evil-normal-state-local-map (kbd "j") 'ibuffer-forward-line)
-    (define-key 'evil-normal-state-local-map (kbd "k") 'ibuffer-backward-line)
-    (define-key 'evil-normal-state-local-map (kbd "q") 'kill-this-buffer)
+    (define-key evil-normal-state-local-map (kbd "J") 'ibuffer-jump-to-buffer)
+    (define-key evil-normal-state-local-map (kbd "j") 'ibuffer-forward-line)
+    (define-key evil-normal-state-local-map (kbd "k") 'ibuffer-backward-line)
+    (define-key evil-normal-state-local-map (kbd "q") 'kill-this-buffer)
   )
   :hook ((ibuffer . ibuffer-buffer-map))
+)
+
+(use-package replace
+  :init
+  (defun occur-buffer-map ()
+    (define-key evil-normal-state-local-map "e" 'occur-edit-mode)
+    (define-key evil-normal-state-local-map [mouse-2] 'occur-mode-mouse-goto)
+    (define-key evil-normal-state-local-map "\r" 'occur-mode-goto-occurrence)
+    (define-key evil-normal-state-local-map "\C-o" 'occur-mode-display-occurrence)
+    (define-key evil-normal-state-local-map "r" 'occur-rename-buffer)
+    (define-key evil-normal-state-local-map  "c" 'clone-buffer)
+    (define-key evil-normal-state-local-map (kbd "SPC m e") 'next-error-follow-minor-mode)
+    )
+  :hook ((occur-mode . occur-buffer-map))
 )
 
 (use-package dired-subtree
