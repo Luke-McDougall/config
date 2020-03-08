@@ -32,7 +32,7 @@ There are two things you can do about this warning:
     (".last" ".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/" ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem" ".x86f" ".sparcf" ".dfsl" ".pfsl" ".d64fsl" ".p64fsl" ".lx64fsl" ".lx32fsl" ".dx64fsl" ".dx32fsl" ".fx64fsl" ".fx32fsl" ".sx64fsl" ".sx32fsl" ".wx64fsl" ".wx32fsl" ".fasl" ".ufsl" ".fsl" ".dxl" ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".pyc" ".pyo")))
  '(custom-safe-themes
    (quote
-    ("d574db69fcc4cc241cb4a059711791fd537a959d8b75f038913639e8e006ca48" "575d772a465e51f9ba7dd9c6213275c7aa3dc68ede1692dcd1521e5d70a7f58d" default)))
+    ("3d4cf45ee28dc5595d8f0a37fc0da519365fd88a2bb98f5c272a50aba86d319b" "0e435534351b0cb0ffa265d4cfea16b4b8fe972f41ec6c51423cdf653720b165" default)))
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(package-selected-packages
    (quote
@@ -126,6 +126,7 @@ There are two things you can do about this warning:
 
               ;; prefix-b for 'buffer' commands
 	      ("SPC b s"   . 'switch-to-buffer)
+	      ("SPC b o"   . 'switch-to-buffer-other-window)
 	      ("SPC b i"   . 'ibuffer-other-window)
 	      ("SPC b e"   . 'eval-buffer)
 	      ("SPC b q"   . 'kill-this-buffer)
@@ -146,10 +147,13 @@ There are two things you can do about this warning:
               ("SPC j n"   . 'evil-jump-forward)
               ("SPC j p"   . 'evil-jump-backward)
 
+              ;; prefix-d for 'dired' commands
+              ("SPC d s"   . 'open-dired-in-side-window)
+              ("SPC d d"   . 'dired)
+
               ;; Miscellaneous
 	      ("SPC SPC"   . 'ido-find-file)
 	      ("SPC \r"    . 'open-terminal-in-default-directory)
-	      ("SPC d"     . 'open-dired-in-side-window)
 	      ("SPC o"     . 'occur)
               ("<f5>"      . 'compile)
 	      ([left]      . 'evil-prev-buffer)
