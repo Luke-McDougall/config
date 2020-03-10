@@ -56,9 +56,12 @@
 (defun open-terminal-in-default-directory ()
   "Opens a terminal (alacritty) in the default-directory of the current buffer."
   (interactive)
-  (setq command (concat "alacritty --working-directory " default-directory))
-  (shell-command command)
+  (start-process "*terminal*" nil "alacritty" "--working-directory" default-directory)
 )
+
+(defun revert-buffer-no-confirm ()
+  (interactive)
+  (revert-buffer nil t nil))
 
 ;; Evil-mode
 (use-package evil
@@ -106,6 +109,7 @@
 	      ("SPC b q"   . 'kill-this-buffer)
 	      ("SPC b k a" . 'kill-all-buffers)
 	      ("SPC b x"   . 'save-and-kill-buffer)
+	      ("SPC b r"   . 'revert-buffer-no-confirm)
 
               ;; Prefix-f for 'find' commands
 	      ("SPC f r"   . 'ido-find-recent-file)
@@ -156,7 +160,8 @@
                 '("%e"
                   mode-line-front-space
                   "%I "
-                  "%b%&"
+                  (:eval
+                   (if (buffer-modified-p) "%b+" "%b"))
                   "  "
                   buffer-file-truename
                   "  "
@@ -311,8 +316,6 @@
 (setq-default show-paren-delay 0)
 (show-paren-mode 1)
 
-(global-display-line-numbers-mode t)
-(setq-default display-line-numbers-type 'relative)
 
 (use-package modus-vivendi-theme
   :ensure t
@@ -338,6 +341,8 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (toggle-scroll-bar -1)
+(global-display-line-numbers-mode t)
+(setq-default display-line-numbers-type 'relative)
 (load-theme 'modus-vivendi)
 
 ;; Turn the garbage collector back on
