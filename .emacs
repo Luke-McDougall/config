@@ -156,17 +156,42 @@
 (use-package emacs
   :config
   (setq mode-line-percent-position nil)
+  ;;(defvar modified-buffer-format (propertize "%b" 'face 'mode-line-emphasis))
   (setq-default mode-line-format
                 '("%e"
                   mode-line-front-space
                   "%I "
+                  "["
                   (:eval
-                   (if (buffer-modified-p) "%b+" "%b"))
-                  "  "
-                  buffer-file-truename
-                  "  "
-                  mode-name
+                   (cond
+                    ((eq evil-state 'normal) "NORMAL")
+                    ((eq evil-state 'visual) "VISUAL")
+                    ((eq evil-state 'insert) "INSERT")))
+                   "] ["
+                   (:eval
+                    (if (buffer-modified-p) "%b | +" "%b"))
+                   "] "
+                   buffer-file-truename
+                   "  "
+                   mode-name
+                   "    "
+                   (:eval
+                    (eyebrowse-mode-line-indicator))
                   mode-line-end-spaces))
+)
+
+(use-package org
+  :init
+  (defun org-buffer-map ()
+    (define-key evil-insert-state-local-map (kbd "M-h") 'org-do-promote)
+    (define-key evil-insert-state-local-map (kbd "M-l") 'org-do-demote)
+    (define-key evil-normal-state-local-map (kbd "C-u") 'outline-up-heading)
+    (define-key evil-normal-state-local-map (kbd "C-j") 'org-next-visible-heading)
+    (define-key evil-normal-state-local-map (kbd "C-k") 'org-previous-visible-heading)
+    (auto-fill-mode 1)
+    (flyspell-mode 1)
+  )
+  :hook ((org-mode . org-buffer-map))
 )
 
 (use-package which-key
@@ -265,6 +290,9 @@
 (use-package rust-mode
   :ensure t)
 
+(use-package fish-mode
+  :ensure t)
+
 ;; Recentf
 (use-package recentf
   :init
@@ -273,6 +301,12 @@
   :config
   (recentf-mode 1)
 )
+
+(use-package eyebrowse
+  :ensure t
+  :config (eyebrowse-setup-opinionated-keys)
+  (eyebrowse-mode t)
+  )
 
 ;; Ido
 (use-package ido
@@ -315,7 +349,6 @@
 (electric-pair-mode 1)
 (setq-default show-paren-delay 0)
 (show-paren-mode 1)
-
 
 (use-package modus-vivendi-theme
   :ensure t
