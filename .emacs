@@ -160,8 +160,9 @@
   (setq-default mode-line-format
                 '("%e"
                   mode-line-front-space
-                  "%I "
-                  "["
+                  (:eval
+                   (eyebrowse-mode-line-indicator))
+                  " ["
                   (:eval
                    (cond
                     ((eq evil-state 'normal) "NORMAL")
@@ -175,9 +176,8 @@
                    "  "
                    mode-name
                    "    "
-                   (:eval
-                    (eyebrowse-mode-line-indicator))
-                  mode-line-end-spaces))
+                   "%I "
+                   mode-line-end-spaces))
 )
 
 (use-package org
