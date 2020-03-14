@@ -174,7 +174,9 @@
                    "] "
                    buffer-file-truename
                    "  "
-                   mode-name
+                   ;;mode-name
+                   (:eval
+                    (all-the-icons-icon-for-buffer))
                    "    "
                    "%I "
                    mode-line-end-spaces))
@@ -343,7 +345,27 @@
 )
 
 (use-package all-the-icons
-  :ensure t)
+  :ensure t
+  :config
+  ;; Very minor modification of the function in `all-the-icons.el' to make it use ido.
+  (defun ido-all-the-icons-insert (&optional arg family)
+    "Interactive icon insertion function.
+  When Prefix ARG is non-nil, insert the propertized icon.
+  When FAMILY is non-nil, limit the candidates to the icon set matching it."
+    (interactive "P")
+    (let* ((standard-output (current-buffer))
+           (candidates (if family
+                           (all-the-icons--read-candidates-for-family family)
+                         (all-the-icons--read-candidates)))
+           (prompt     (if family
+                           (format "%s Icon: " (funcall (all-the-icons--family-name family)))
+                         "Icon : "))
+  
+           (selection (ido-completing-read prompt candidates nil t)) ;;This is the only change
+           (result    (cdr (assoc selection candidates))))
+  
+      (if arg (prin1 result) (insert result))))
+  )
 
 ;; Paren zone
 (electric-pair-mode 1)
