@@ -59,6 +59,16 @@
   (start-process "*terminal*" nil "alacritty" "--working-directory" default-directory)
 )
 
+(defun rg-find-file ()
+  (interactive)
+  (setq dir (if (eq (vc-root-dir) nil) default-directory (vc-root-dir)))
+  (setq file
+        (ido-completing-read "Open: "
+                             (mapcar 'abbreviate-file-name
+                                     (split-string (shell-command-to-string (concat "rg --files " dir)) "\n"))))
+  (find-file file)
+)
+
 (defun revert-buffer-no-confirm ()
   (interactive)
   (revert-buffer nil t nil))
