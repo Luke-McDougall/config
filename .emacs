@@ -78,6 +78,13 @@
   (advice-add 'evil-jump-forward :after #'my-center-line)
   (advice-add 'evil-jump-backward :after #'my-center-line)
 
+
+  (defun switch-to-window-occur (&rest _)
+    "It annoys me that I have to switch to the occur buffer manually"
+    (select-window (get-buffer-window "*Occur*"))
+  )
+  (advice-add 'occur :after #'switch-to-window-occur)
+
   :config (evil-ex-define-cmd "light" 'switch-theme-light)
 	  (evil-ex-define-cmd "dark" 'switch-theme-dark)
 	  (evil-ex-define-cmd "config" '(lambda ()
@@ -190,6 +197,7 @@
     (define-key evil-normal-state-local-map (kbd "C-u") 'outline-up-heading)
     (define-key evil-normal-state-local-map (kbd "C-j") 'org-next-visible-heading)
     (define-key evil-normal-state-local-map (kbd "C-k") 'org-previous-visible-heading)
+    (define-key evil-normal-state-local-map (kbd "SPC s w") 'flyspell-correct-word-before-point)
     (auto-fill-mode 1)
     (flyspell-mode 1)
   )
@@ -215,6 +223,7 @@
 (use-package replace
   :init
   (defun occur-buffer-map ()
+    "Keybindings for occur buffer"
     (define-key evil-normal-state-local-map "e" 'occur-edit-mode)
     (define-key evil-normal-state-local-map [mouse-2] 'occur-mode-mouse-goto)
     (define-key evil-normal-state-local-map "\r" 'occur-mode-goto-occurrence)
@@ -222,7 +231,7 @@
     (define-key evil-normal-state-local-map "r" 'occur-rename-buffer)
     (define-key evil-normal-state-local-map  "c" 'clone-buffer)
     (define-key evil-normal-state-local-map (kbd "SPC m e") 'next-error-follow-minor-mode)
-    )
+  )
   :hook ((occur-mode . occur-buffer-map))
 )
 
@@ -254,7 +263,7 @@
                                      (window-width . 0.16)))
     (with-current-buffer dir
       (rename-buffer "*Dired-Side*"))
-    (other-window 1)
+    (select-window (get-buffer-window "*Dired-Side*"))
   )
 
   :config
@@ -314,6 +323,7 @@
 (use-package ido
   :init
   (setq ido-enable-flex-matching t)
+  ;; Stop ido from doing bad things
   (setq ido-auto-merge-work-directories-length -1)
   (setq ido-create-new-buffer 'always)
   (setq ido-use-virtual-buffers 'auto)
@@ -398,7 +408,7 @@
 (toggle-scroll-bar -1)
 (global-display-line-numbers-mode t)
 (setq-default display-line-numbers-type 'relative)
-(load-theme 'modus-vivendi)
+(load-theme 'modus-operandi)
 
 ;; Turn the garbage collector back on
 (add-to-list 'load-path "~/.emacs.d/gcmh")
