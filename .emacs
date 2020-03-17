@@ -69,6 +69,11 @@
   (find-file file)
 )
 
+(defun rg-open-all-files-in-directory ()
+  (interactive)
+  (mapcar 'find-file
+          (split-string (shell-command-to-string (concat "rg --files " default-directory)) "\n")))
+
 (defun revert-buffer-no-confirm ()
   (interactive)
   (revert-buffer nil t nil))
@@ -156,8 +161,14 @@
 	      (";"         . 'evil-ex)
 	      :map evil-insert-state-map
 	      ("C-j"       . 'jump-to-closing-paren)
+	      ("C-k"       . 'evil-normal-state)
           )
 )
+
+(use-package evil-snipe
+  :ensure t
+  :config
+  (evil-snipe-mode +1))
 
 (use-package window
   :init
@@ -208,6 +219,9 @@
     (define-key evil-normal-state-local-map (kbd "C-j") 'org-next-visible-heading)
     (define-key evil-normal-state-local-map (kbd "C-k") 'org-previous-visible-heading)
     (define-key evil-normal-state-local-map (kbd "SPC s w") 'flyspell-correct-word-before-point)
+    (define-key xah-math-input-keymap (kbd "S-SPC") nil)
+    (define-key xah-math-input-keymap (kbd "<f1>") 'xah-math-input-change-to-symbol)
+    (xah-math-input-mode 1)
     (auto-fill-mode 1)
     (flyspell-mode 1)
   )
@@ -259,6 +273,8 @@
     (define-key evil-normal-state-local-map "l" 'dired-subtree-insert)
     (define-key evil-normal-state-local-map "h" 'dired-subtree-remove)
     (define-key evil-normal-state-local-map "q" 'kill-this-buffer)
+    (define-key evil-normal-state-local-map "c" 'dired-do-copy)
+    (define-key evil-normal-state-local-map "C" 'dired-do-compress-to)
     (define-key evil-normal-state-local-map (kbd "\r") 'dired-find-file)
     (define-key evil-normal-state-local-map (kbd "TAB") 'dired-subtree-cycle)
     (define-key evil-normal-state-local-map (kbd "C-j") 'dired-subtree-down)
@@ -410,7 +426,11 @@
     (load-theme 'modus-operandi))
 )
 
+(use-package xah-math-input
+  :ensure t)
+
 ;; Clean Screen
+;;(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-11"))
 (setq inhibit-startup-screen t)
 (setq scroll-conservatively 100)
 (menu-bar-mode -1)
