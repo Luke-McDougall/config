@@ -69,10 +69,11 @@
   (find-file file)
 )
 
-(defun rg-open-all-files-in-directory ()
+(defun luke/open-project ()
   (interactive)
   (mapcar 'find-file
-          (split-string (shell-command-to-string (concat "rg --files " default-directory)) "\n")))
+          (split-string (shell-command-to-string "filename_searcher ~/OOSE/Worksheet_3/AddressBookApp \"^.+\\.java$\"") "\n"))
+)
 
 (defun revert-buffer-no-confirm ()
   (interactive)
