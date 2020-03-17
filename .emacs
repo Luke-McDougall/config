@@ -353,7 +353,8 @@
   ;; Stop ido from doing bad things
   (setq ido-auto-merge-work-directories-length -1)
   (setq ido-create-new-buffer 'always)
-  (setq ido-use-virtual-buffers 'auto)
+  (setq ido-use-virtual-buffers nil)
+  (setq ido-ignore-buffers '("\*.+\*"))
   (setq ido-ignore-extensions t)
   (setq ido-everywhere t)
 
@@ -431,7 +432,7 @@
   :ensure t)
 
 ;; Clean Screen
-;;(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-11"))
+(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-11"))
 (setq inhibit-startup-screen t)
 (setq scroll-conservatively 100)
 (menu-bar-mode -1)
