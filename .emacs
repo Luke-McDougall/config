@@ -28,6 +28,12 @@
 
   (load custom-file))
 
+(defun make-frame-floating-with-current-buffer ()
+  (make-frame '((name . "my_float_window")
+                (window-system . x)
+                (minibuffer . nil)))
+)
+
 (defun jump-to-closing-paren ()
   "Pretty self explanatory dude."
   (interactive)
@@ -84,6 +90,7 @@
   :ensure t
   :init (setq evil-vsplit-window-right t
               evil-split-window-below t
+              evil-want-Y-yank-to-eol t
               evil-emacs-state-modes nil)
 
   ;; Center point after any jumps
@@ -336,6 +343,8 @@
   :init
   (setq recentf-max-menu-items 10)
   (setq recentf-max-saved-items 25)
+  (setq recentf-exclude '(".+autoloads\.el"
+                          "ido\.last"))
   :config
   (recentf-mode 1)
 )
