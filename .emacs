@@ -118,6 +118,8 @@
               ;; Movement commands
 	      ("H"         . 'evil-first-non-blank-of-visual-line)
 	      ("L"         . 'evil-end-of-visual-line)
+              ("zk"        . 'evil-scroll-line-to-top)
+              ("zj"        . 'evil-scroll-line-to-bottom)
 	      ("C-j"       . 'evil-forward-paragraph)
 	      ("C-k"       . 'evil-backward-paragraph)
 
