@@ -75,12 +75,6 @@
   (find-file file)
 )
 
-(defun luke/open-project ()
-  (interactive)
-  (mapcar 'find-file
-          (split-string (shell-command-to-string "filename_searcher ~/OOSE/Worksheet_3/AddressBookApp \"^.+\\.java$\"") "\n"))
-)
-
 (defun revert-buffer-no-confirm ()
   (interactive)
   (revert-buffer nil t nil))
@@ -194,7 +188,6 @@
 (use-package emacs
   :config
   (setq mode-line-percent-position nil)
-  ;;(defvar modified-buffer-format (propertize "%b" 'face 'mode-line-emphasis))
   (setq-default mode-line-format
                 '("%e"
                   mode-line-front-space
@@ -212,7 +205,6 @@
                    "] "
                    buffer-file-truename
                    "  "
-                   ;;mode-name
                    (:eval
                     (all-the-icons-icon-for-buffer))
                    "    "
@@ -335,9 +327,6 @@
 (add-hook 'java-mode-hook 'java-custom-indent-settings)
 
 (use-package rust-mode
-  :ensure t)
-
-(use-package fish-mode
   :ensure t)
 
 ;; Recentf
