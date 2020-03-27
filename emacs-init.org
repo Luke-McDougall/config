@@ -1,6 +1,10 @@
 #+TITLE: Normie Emacs Init File
-*Org Mode Basics.* All you need to know for now is that tab expands
- and contracts headings.
+*Org Mode Basics.* 
+- <tab> ::  expands and contracts headings.
+- <C-c '> :: inside a source code block will open that block in a
+  separate window for editing. Pressing <C-c '> again in the new
+  window will close it and apply any changes to the original source
+  code block.
 
 * GCMH
   Apparently the garbage collector makes startup slow in Emacs. This
@@ -186,6 +190,10 @@
   #+BEGIN_SRC emacs-lisp
     (use-package org
       :init
+      (defun export-init-file-from-org ()
+        (interactive)
+        (org-babel-tangle nil "~/.emacs.d/init.el" nil))
+  
       (defun org-buffer-hook ()
         (auto-fill-mode 1))
       :hook ((org-mode . org-buffer-hook)))
@@ -323,7 +331,8 @@
        (setq recentf-max-menu-items 10)
        (setq recentf-max-saved-items 25)
        (setq recentf-exclude '(".+autoloads\.el"
-                               "ido\.last"))
+                               "ido\.last"
+                               "\.cache/.+"))
        :config
        (recentf-mode 1)
        )
