@@ -51,8 +51,11 @@
          ("C-w w"     . delete-other-windows)       ;; Close all windows except the focused one
          ("C-w q"     . delete-window)              ;; Close the focused window
          ("C-w v"     . split-window-right)         ;; Vertically split window
+         ("C-w s"     . next-window)                ;; Switch to next window
          ("<f5>"      . dot-bat-compile)            ;; Run a build.bat in the same directory as the current file
+         ("<f6>"      . dot-bat-run)                ;; Run a run.bat in the same directory as the current file
          ("<f8>"      . window-toggle-side-windows) ;; Toggle display of treemacs
+         ("C-;"       . goto-line)                  ;; Input a number and jump to that line
          )
   )
 
@@ -60,6 +63,10 @@
 (defun dot-bat-compile ()
   (interactive)
   (compile "build.bat"))
+
+(defun dot-bat-run ()
+  (interactive)
+  (compile "run.bat"))
 
 (use-package which-key
   :ensure t
@@ -125,7 +132,7 @@
   :config
   (setq doom-themes-enable-bold t
         doom-themes-enable-itlic t)
-  (load-theme 'doom-one t)
+  (load-theme 'doom-acario-dark t)
   (setq doom-themes-treemacs-theme "doom-colors");; Theme for treemacs
   (doom-themes-treemacs-config)
   (doom-themes-org-config))
@@ -154,6 +161,8 @@
 (setq-default c-default-style "k&r")
 
 (add-hook 'after-init-hook 'global-hl-line-mode)
+
+(global-display-line-numbers-mode t)
 
 (setq scroll-conservatively 100)
 
