@@ -41,6 +41,7 @@
 		  (eq ?\] (char-after))
 		  (eq ?}  (char-after))
 		  (eq ?>  (char-after))
+		  (eq ?'  (char-after))
 		  (eq ?\" (char-after))))
     (forward-char 1)
   )
@@ -75,6 +76,11 @@
   (find-file file)
 )
 
+(defun open-pdf ()
+  (interactive)
+  (shell-command "PDF")
+  )
+
 (defun revert-buffer-no-confirm ()
   (interactive)
   (revert-buffer nil t nil))
@@ -106,7 +112,7 @@
 	  (evil-ex-define-cmd "dark" 'switch-theme-dark)
 	  (evil-ex-define-cmd "config" '(lambda ()
 	  				(interactive)
-	  				(evil-edit "~/.emacs")))
+	  				(evil-edit "~/.emacs.d/init.el")))
 	  (evil-mode 1)
   :bind (:map evil-normal-state-map
               ;; Movement commands
@@ -410,27 +416,50 @@
 (setq-default show-paren-delay 0)
 (show-paren-mode 1)
 
-(use-package modus-vivendi-theme
-  :ensure t
+(use-package emacs
   :config
-  (defun switch-theme-dark ()
-  "Pretty self explanatory dude."
+  (defun modus-themes-toggle ()
+    "Simplistic toggle for my Modus Themes.  All it does is check
+if `modus-operandi' (light version) is active and if so switch to
+`modus-vivendi' (dark version).  Else it switches to the light
+theme."
     (interactive)
-    (load-theme 'modus-vivendi))
-)
+    (if (eq (car custom-enabled-themes) 'modus-operandi)
+        (modus-vivendi)
+      (modus-operandi)))
 
-(use-package modus-operandi-theme
-  :ensure t
-  :config
-  (defun switch-theme-light ()
-    "Pretty self explanatory dude."
-    (interactive)
-    (load-theme 'modus-operandi))
-)
+  (defun modus-vivendi ()
+    (setq modus-vivendi-theme-slanted-constructs t
+          modus-vivendi-theme-bold-constructs t
+          modus-vivendi-theme-proportional-fonts nil
+          modus-vivendi-theme-scale-headings t
+          modus-vivendi-theme-scale-1 1.05
+          modus-vivendi-theme-scale-2 1.1
+          modus-vivendi-theme-scale-3 1.15
+          modus-vivendi-theme-scale-4 1.2)
+    (load-theme 'modus-vivendi t))
+
+  (defun modus-operandi ()
+    (setq modus-operandi-theme-slanted-constructs t
+          modus-operandi-theme-bold-constructs t
+          modus-operandi-theme-proportional-fonts nil
+          modus-operandi-theme-scale-headings t
+          modus-operandi-theme-scale-1 1.05
+          modus-operandi-theme-scale-2 1.1
+          modus-operandi-theme-scale-3 1.15
+          modus-operandi-theme-scale-4 1.2)
+    (load-theme 'modus-operandi t))
+
+  :bind (("<f3>" . modus-themes-toggle))
+  :hook (after-init . modus-operandi)
+  )
 
 (use-package xah-math-input
   :ensure t)
 
+(add-hook 'after-init-hook 'global-hl-line-mode)
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 ;; Clean Screen
 (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-11"))
 (setq inhibit-startup-screen t)
