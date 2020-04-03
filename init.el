@@ -469,7 +469,6 @@ theme."
 (toggle-scroll-bar -1)
 (global-display-line-numbers-mode t)
 (setq-default display-line-numbers-type 'relative)
-(load-theme 'modus-operandi)
 
 ;; Turn the garbage collector back on
 (add-to-list 'load-path "~/.emacs.d/gcmh")
