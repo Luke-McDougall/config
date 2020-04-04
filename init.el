@@ -73,12 +73,14 @@
   (interactive)
   (setq dir (if (eq (vc-root-dir) nil) default-directory (vc-root-dir)))
   (setq file
-        (ido-completing-read "Open: "
+        (completing-read "Open: "
                              (mapcar 'abbreviate-file-name
                                      (split-string (shell-command-to-string (concat "rg --files " dir)) "\n"))))
   (find-file file)
 )
 
+;; Currently not working properly. I want to start mupdf with start-process
+;; but it didn't work. This works but emacs blocks until mupdf is closed.
 (defun open-pdf ()
   (interactive)
   (shell-command "PDF")
@@ -167,6 +169,7 @@
               ;; prefix-d for 'dired' commands
               ("SPC d s"   . 'open-dired-in-side-window)
               ("SPC d d"   . 'dired)
+              ("SPC d o"   . 'dired-other-window)
 
               ;; Miscellaneous
 	      ("SPC SPC"   . 'find-file)
@@ -309,6 +312,7 @@
   (setq dired-recursive-deletes 'always)
   (setq dired-delete-by-moving-to-trash t)
   (setq dired-listing-switches "-AFlv --group-directories-first")
+  (setq dired-dwim-target t)
   :hook ((dired-mode . dired-hide-details-mode)
 	 (dired-mode . hl-line-mode)
 	 (dired-mode . dired-buffer-map))
@@ -358,12 +362,7 @@
   (setq completion-pcm-complete-word-inserts-delimiters t)
   (setq completion-pcm-word-delimiters "-_./:| ")
   (setq completion-show-help nil)
-  ;;(setq completion-styles '(partial-completion substring initials flex))
   (setq completion-styles '(initials flex))
-  ;;(setq completion-category-overrides
-  ;;      '((file (styles initials basic))
-  ;;        (buffer (styles initials basic))
-  ;;        (info-menu (styles basic))))
   (setq completions-format 'vertical)
   (setq enable-recursive-minibuffers t)
   (setq read-answer-short t)
@@ -399,15 +398,16 @@ instead"
             (select-window (get-mru-window)))))))
 
   (defun completion-list-buffer-bindings ()
-    (define-key evil-normal-state-local-map (kbd "H") 'describe-symbol-at-point)
-    (define-key evil-normal-state-local-map (kbd "j") 'next-line)
-    (define-key evil-normal-state-local-map (kbd "k") 'previous-line)
-    (define-key evil-normal-state-local-map (kbd "h") 'previous-completion)
-    (define-key evil-normal-state-local-map (kbd "l") 'next-completion))
+    (define-key evil-normal-state-local-map (kbd "H")        'describe-symbol-at-point)
+    (define-key evil-normal-state-local-map (kbd "j")        'next-line)
+    (define-key evil-normal-state-local-map (kbd "k")        'previous-line)
+    (define-key evil-normal-state-local-map (kbd "h")        'previous-completion)
+    (define-key evil-normal-state-local-map (kbd "<return>") 'choose-completion)
+    (define-key evil-normal-state-local-map (kbd "l")        'next-completion))
 
   :bind (:map completion-list-mode-map
               ("M-v" . focus-minibuffer))
-  :hook (completion-setup . completion-list-buffer-bindings))
+  :hook (completion-list-mode . completion-list-buffer-bindings))
 
 (use-package icomplete
   :demand
@@ -425,11 +425,6 @@ instead"
 
   (fido-mode -1)
   (icomplete-mode 1)
-
-  (defun luke/icomplete-force-complete-and-exit ()
-    (interactive)
-    (icomplete-force-complete)
-    (exit-minibuffer))
 
   (defun icomplete-find-recent-file ()
     (interactive)
@@ -450,57 +445,22 @@ instead"
               ("<left>"   . icomplete-backward-completions)
               ("K"        . icomplete-backward-completions)
               ("C-f"      . luke/icomplete-toggle-basic)
-              ("<return>" . luke/icomplete-force-complete-and-exit))
+              ("<return>" . icomplete-fido-ret))
   )
-;; Ido
-;;(use-package ido
-;;  :init
-;;  (setq ido-enable-flex-matching t)
-;;  ;; Stop ido from doing bad things
-;;  (setq ido-auto-merge-work-directories-length -1)
-;;  (setq ido-create-new-buffer 'always)
-;;  (setq ido-use-virtual-buffers nil)
-;;  (setq ido-ignore-buffers '("\*.+\*"))
-;;  (setq ido-ignore-extensions t)
-;;  (setq ido-everywhere t)
-;;
-;;  (defun ido-my-keys ()
-;;    "Add my key bindings for Ido."
-;;    (define-key ido-completion-map (kbd "TAB") 'ido-next-match))
-;;
-;;  (defun ido-find-recent-file ()
-;;    "Interactively open a recent file."
-;;    (interactive)
-;;    (let ((file
-;;           (ido-completing-read "Choose recent file: "
-;;                                (mapcar 'abbreviate-file-name recentf-list) nil t)))
-;;      (when file
-;;	(find-file file))))
-;;
-;;  :config
-;;  (add-hook 'ido-setup-hook 'ido-my-keys)
-;;  (ido-mode 1)
-;;)
-;;
-;;(use-package smex
-;;  :ensure t
-;;  :init
-;;  (global-set-key (kbd "M-x") 'smex)
-;;)
 
 ;; Paren zone
 (electric-pair-mode 1)
 (setq-default show-paren-delay 0)
 (show-paren-mode 1)
 
-(use-package modus-vivendi-theme
-  :ensure t)
-
-(use-package modus-operandi-theme
-  :ensure t)
-
 (use-package emacs
   :config
+  (use-package modus-vivendi-theme
+    :ensure t)
+
+  (use-package modus-operandi-theme
+    :ensure t)
+
   (defun modus-themes-toggle ()
     "Simplistic toggle for my Modus Themes.  All it does is check
 if `modus-operandi' (light version) is active and if so switch to
@@ -543,6 +503,7 @@ theme."
 (add-hook 'after-init-hook 'global-hl-line-mode)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+
 ;; Clean Screen
 (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-11"))
 (setq inhibit-startup-screen t)
