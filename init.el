@@ -9,7 +9,10 @@
 			 ("gnu"   . "http://elpa.gnu.org/packages/")
 			 ("melpa" . "https://melpa.org/packages/")
 			 ("org"   . "https://orgmode.org/elpa/")))
-(package-initialize)
+
+(unless (bound-and-true-p package--initialized)
+  (setq pacakge-enable-at-startup nil)
+  (package-initialize))
 
 ;; Make sure use package is installed
 (unless (package-installed-p 'use-package)
@@ -144,10 +147,14 @@
 	      ("SPC b r"   . 'revert-buffer-no-confirm)
 
               ;; Prefix-f for 'find' commands
-	      ("SPC f r"   . 'ido-find-recent-file)
+	      ("SPC f r"   . 'icomplete-find-recent-file)
 	      ("SPC f o"   . 'find-file-other-window)
-	      ("SPC f f"   . 'ido-find-file)
+	      ("SPC f f"   . 'find-file)
 	      ("SPC f l"   . 'find-library)
+	      ("SPC f m"   . 'man)
+
+              ;; Prefix-h for 'help' commands
+              ("SPC h"     . 'describe-symbol-at-point)
 
               ;; prefix-e for 'error' commands
               ("SPC e n"   . 'next-error)
@@ -162,12 +169,10 @@
               ("SPC d d"   . 'dired)
 
               ;; Miscellaneous
-	      ("SPC SPC"   . 'ido-find-file)
+	      ("SPC SPC"   . 'find-file)
 	      ("SPC \r"    . 'open-terminal-in-default-directory)
 	      ("SPC o"     . 'occur)
               ("<f5>"      . 'compile)
-	      ([left]      . 'evil-prev-buffer)
-	      ([right]     . 'evil-next-buffer)
 	      (";"         . 'evil-ex)
 	      :map evil-insert-state-map
 	      ("C-j"       . 'jump-to-closing-paren)
@@ -211,9 +216,8 @@
                    "] "
                    buffer-file-truename
                    "  "
-                   (:eval
-                    (all-the-icons-icon-for-buffer))
-                   "    "
+                   buffer-mode
+                   "  "
                    "%I "
                    mode-line-end-spaces))
 )
@@ -277,11 +281,11 @@
     "Setup bindings for dired buffer."
     (interactive)
     (local-unset-key (kbd "SPC"))
-    (local-unset-key (kbd "\r"))
     (define-key evil-normal-state-local-map "l" 'dired-subtree-insert)
     (define-key evil-normal-state-local-map "h" 'dired-subtree-remove)
     (define-key evil-normal-state-local-map "q" 'kill-this-buffer)
     (define-key evil-normal-state-local-map "c" 'dired-do-copy)
+    (define-key evil-normal-state-local-map "r" 'dired-do-rename)
     (define-key evil-normal-state-local-map "C" 'dired-do-compress-to)
     (define-key evil-normal-state-local-map (kbd "\r") 'dired-find-file)
     (define-key evil-normal-state-local-map (kbd "TAB") 'dired-subtree-cycle)
@@ -341,80 +345,159 @@
   (setq recentf-max-menu-items 10)
   (setq recentf-max-saved-items 25)
   (setq recentf-exclude '(".+autoloads\.el"
-                          "ido\.last"))
+                          "ido\.last"
+                          ".*/TAGS"))
   :config
   (recentf-mode 1)
 )
 
-(use-package eyebrowse
-  :ensure t
-  :config (eyebrowse-setup-opinionated-keys)
-  (eyebrowse-mode t)
-  )
+(use-package minibuffer
+  :config
+  (setq completion-cycle-threshold 3)
+  (setq completion-flex-nospace nil)
+  (setq completion-pcm-complete-word-inserts-delimiters t)
+  (setq completion-pcm-word-delimiters "-_./:| ")
+  (setq completion-show-help nil)
+  ;;(setq completion-styles '(partial-completion substring initials flex))
+  (setq completion-styles '(initials flex))
+  ;;(setq completion-category-overrides
+  ;;      '((file (styles initials basic))
+  ;;        (buffer (styles initials basic))
+  ;;        (info-menu (styles basic))))
+  (setq completions-format 'vertical)
+  (setq enable-recursive-minibuffers t)
+  (setq read-answer-short t)
+  (setq read-buffer-completion-ignore-case t)
+  (setq read-file-name-completion-ignore-case t)
+  (setq resize-mini-windows t)
 
-;; Ido
-(use-package ido
-  :init
-  (setq ido-enable-flex-matching t)
-  ;; Stop ido from doing bad things
-  (setq ido-auto-merge-work-directories-length -1)
-  (setq ido-create-new-buffer 'always)
-  (setq ido-use-virtual-buffers nil)
-  (setq ido-ignore-buffers '("\*.+\*"))
-  (setq ido-ignore-extensions t)
-  (setq ido-everywhere t)
+  (file-name-shadow-mode 1)
+  (minibuffer-depth-indicate-mode 1)
+  (minibuffer-electric-default-mode 1)
 
-  (defun ido-my-keys ()
-    "Add my key bindings for Ido."
-    (define-key ido-completion-map (kbd "TAB") 'ido-next-match))
+  (defun focus-minibuffer ()
+    "Focus the active minibuffer"
+    (interactive)
+    (let ((mini (active-minibuffer-window)))
+      (when mini
+        (select-window mini))))
 
-  (defun ido-find-recent-file ()
-    "Interactively open a recent file."
+  (defun describe-symbol-at-point (&optional arg)
+    "Get help (documentation) for the symbol at point.
+With a prefix argument, switch to the \\*Help\\* window. If that
+is already focused, switch to the most recently used window
+instead"
+    (interactive "P")
+    (let ((symbol (symbol-at-point)))
+      (when symbol
+        (describe-symbol symbol)))
+    (when current-prefix-arg
+      (let ((help (get-buffer-window "*Help*")))
+        (when help
+          (if (not (eq (selected-window) help))
+              (select-window help)
+            (select-window (get-mru-window)))))))
+
+  (defun completion-list-buffer-bindings ()
+    (define-key evil-normal-state-local-map (kbd "H") 'describe-symbol-at-point)
+    (define-key evil-normal-state-local-map (kbd "j") 'next-line)
+    (define-key evil-normal-state-local-map (kbd "k") 'previous-line)
+    (define-key evil-normal-state-local-map (kbd "h") 'previous-completion)
+    (define-key evil-normal-state-local-map (kbd "l") 'next-completion))
+
+  :bind (:map completion-list-mode-map
+              ("M-v" . focus-minibuffer))
+  :hook (completion-setup . completion-list-buffer-bindings))
+
+(use-package icomplete
+  :demand
+  :after minibuffer
+  :config
+  (setq icomplete-delay-completions-threshold 0)
+  (setq icomplete-max-delay-chars 0)
+  (setq icomplete-compute-delay 0)
+  (setq icomplete-show-matches-on-no-input t)
+  (setq icomplete-hide-common-prefix nil)
+  (setq icomplete-prospects-height 1)
+  (setq icomplete-separator " · ")           ; mid dot, not full stop
+  (setq icomplete-with-completion-tables t)
+  (setq icomplete-in-buffer t)
+
+  (fido-mode -1)
+  (icomplete-mode 1)
+
+  (defun luke/icomplete-force-complete-and-exit ()
+    (interactive)
+    (icomplete-force-complete)
+    (exit-minibuffer))
+
+  (defun icomplete-find-recent-file ()
     (interactive)
     (let ((file
-           (ido-completing-read "Choose recent file: "
+           (completing-read "Choose recent file: "
                                 (mapcar 'abbreviate-file-name recentf-list) nil t)))
       (when file
 	(find-file file))))
 
-  :config
-  (add-hook 'ido-setup-hook 'ido-my-keys)
-  (ido-mode 1)
-)
+  (defun luke/icomplete-toggle-basic ()
+    "Change to basic completion for current icomplete minibuffer"
+    (interactive)
+    (setq-local completion-styles '(basic)))
 
-(use-package smex
-  :ensure t
-  :init
-  (global-set-key (kbd "M-x") 'smex)
-)
-
-(use-package all-the-icons
-  :ensure t
-  :config
-  ;; Very minor modification of the function in `all-the-icons.el' to make it use ido.
-  (defun ido-all-the-icons-insert (&optional arg family)
-    "Interactive icon insertion function.
-  When Prefix ARG is non-nil, insert the propertized icon.
-  When FAMILY is non-nil, limit the candidates to the icon set matching it."
-    (interactive "P")
-    (let* ((standard-output (current-buffer))
-           (candidates (if family
-                           (all-the-icons--read-candidates-for-family family)
-                         (all-the-icons--read-candidates)))
-           (prompt     (if family
-                           (format "%s Icon: " (funcall (all-the-icons--family-name family)))
-                         "Icon : "))
-  
-           (selection (ido-completing-read prompt candidates nil t)) ;;This is the only change
-           (result    (cdr (assoc selection candidates))))
-  
-      (if arg (prin1 result) (insert result))))
+  :bind (:map icomplete-minibuffer-map
+              ("<right>"  . icomplete-forward-completions)
+              ("J"        . icomplete-forward-completions)
+              ("<left>"   . icomplete-backward-completions)
+              ("K"        . icomplete-backward-completions)
+              ("C-f"      . luke/icomplete-toggle-basic)
+              ("<return>" . luke/icomplete-force-complete-and-exit))
   )
+;; Ido
+;;(use-package ido
+;;  :init
+;;  (setq ido-enable-flex-matching t)
+;;  ;; Stop ido from doing bad things
+;;  (setq ido-auto-merge-work-directories-length -1)
+;;  (setq ido-create-new-buffer 'always)
+;;  (setq ido-use-virtual-buffers nil)
+;;  (setq ido-ignore-buffers '("\*.+\*"))
+;;  (setq ido-ignore-extensions t)
+;;  (setq ido-everywhere t)
+;;
+;;  (defun ido-my-keys ()
+;;    "Add my key bindings for Ido."
+;;    (define-key ido-completion-map (kbd "TAB") 'ido-next-match))
+;;
+;;  (defun ido-find-recent-file ()
+;;    "Interactively open a recent file."
+;;    (interactive)
+;;    (let ((file
+;;           (ido-completing-read "Choose recent file: "
+;;                                (mapcar 'abbreviate-file-name recentf-list) nil t)))
+;;      (when file
+;;	(find-file file))))
+;;
+;;  :config
+;;  (add-hook 'ido-setup-hook 'ido-my-keys)
+;;  (ido-mode 1)
+;;)
+;;
+;;(use-package smex
+;;  :ensure t
+;;  :init
+;;  (global-set-key (kbd "M-x") 'smex)
+;;)
 
 ;; Paren zone
 (electric-pair-mode 1)
 (setq-default show-paren-delay 0)
 (show-paren-mode 1)
+
+(use-package modus-vivendi-theme
+  :ensure t)
+
+(use-package modus-operandi-theme
+  :ensure t)
 
 (use-package emacs
   :config
