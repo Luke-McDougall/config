@@ -31,12 +31,6 @@
 
   (load custom-file))
 
-(defun make-frame-floating-with-current-buffer ()
-  (make-frame '((name . "my_float_window")
-                (window-system . x)
-                (minibuffer . nil)))
-)
-
 (defun jump-to-closing-paren ()
   "Pretty self explanatory dude."
   (interactive)
@@ -69,22 +63,10 @@
   (start-process "*terminal*" nil "alacritty" "--working-directory" default-directory)
 )
 
-(defun rg-find-file ()
-  (interactive)
-  (setq dir (if (eq (vc-root-dir) nil) default-directory (vc-root-dir)))
-  (setq file
-        (completing-read "Open: "
-                             (mapcar 'abbreviate-file-name
-                                     (split-string (shell-command-to-string (concat "rg --files " dir)) "\n"))))
-  (find-file file)
-)
-
-;; Currently not working properly. I want to start mupdf with start-process
-;; but it didn't work. This works but emacs blocks until mupdf is closed.
-(defun open-pdf ()
-  (interactive)
-  (shell-command "PDF")
-  )
+(use-package autorevert
+  :config
+  (setq auto-revert-verbose t)
+  :hook (after-init . global-auto-revert-mode))
 
 (defun revert-buffer-no-confirm ()
   (interactive)
@@ -96,6 +78,7 @@
   :init (setq evil-vsplit-window-right t
               evil-split-window-below t
               evil-want-Y-yank-to-eol t
+              evil-search-module 'evil-search
               evil-emacs-state-modes nil)
 
   ;; Center point after any jumps
@@ -106,80 +89,96 @@
   (advice-add 'evil-jump-forward :after #'my-center-line)
   (advice-add 'evil-jump-backward :after #'my-center-line)
 
+  ;; Get rid of search highlighting after 'j' is pressed
+  (defun luke/nohighlight (&rest _)
+    (evil-ex-nohighlight))
 
+  (advice-add 'evil-next-line :after #'luke/nohighlight)
+  
+  ;; It annoys me that I have to switch to the occur buffer manually
   (defun switch-to-window-occur (&rest _)
-    "It annoys me that I have to switch to the occur buffer manually"
-    (select-window (get-buffer-window "*Occur*"))
-  )
+    (select-window (get-buffer-window "*Occur*")))
+
   (advice-add 'occur :after #'switch-to-window-occur)
 
-  :config (evil-ex-define-cmd "light" 'switch-theme-light)
-	  (evil-ex-define-cmd "dark" 'switch-theme-dark)
-	  (evil-ex-define-cmd "config" '(lambda ()
-	  				(interactive)
-	  				(evil-edit "~/.emacs.d/init.el")))
-	  (evil-mode 1)
+  :config 
+  (defun luke/config ()
+    (interactive)
+    (find-file "~/.emacs.d/init.el"))
+
+  (defun luke/config-other-window ()
+    (interactive)
+    (find-file-other-window "~/.emacs.d/init.el"))
+
+  (evil-ex-define-cmd "config" 'luke/config)
+
+  (evil-mode 1)
   :bind (:map evil-normal-state-map
               ;; Movement commands
-	      ("H"         . 'evil-first-non-blank-of-visual-line)
-	      ("L"         . 'evil-end-of-visual-line)
-              ("zk"        . 'evil-scroll-line-to-top)
-              ("zj"        . 'evil-scroll-line-to-bottom)
-	      ("C-j"       . 'evil-forward-paragraph)
-	      ("C-k"       . 'evil-backward-paragraph)
+	      ("H"         . evil-first-non-blank-of-visual-line)
+	      ("L"         . evil-end-of-visual-line)
+              ("zk"        . evil-scroll-line-to-top)
+              ("zj"        . evil-scroll-line-to-bottom)
+	      ("C-j"       . evil-forward-paragraph)
+	      ("C-k"       . evil-backward-paragraph)
 
               ;; prefix-w for 'window' commands
-	      ("SPC w h"   . 'evil-window-left)
-	      ("SPC w l"   . 'evil-window-right)
-	      ("SPC w k"   . 'evil-window-up)
-	      ("SPC w j"   . 'evil-window-down)
-	      ("SPC w v"   . 'evil-window-vsplit)
-	      ("SPC w s"   . 'evil-window-split)
-	      ("SPC w q"   . 'delete-window)
-	      ("SPC w w"   . 'delete-other-windows)
+	      ("SPC w h"   . evil-window-left)
+	      ("SPC w l"   . evil-window-right)
+	      ("SPC w k"   . evil-window-up)
+	      ("SPC w j"   . evil-window-down)
+	      ("SPC w v"   . evil-window-vsplit)
+	      ("SPC w s"   . evil-window-split)
+	      ("SPC w q"   . delete-window)
+	      ("SPC w w"   . delete-other-windows)
 
               ;; prefix-b for 'buffer' commands
-	      ("SPC b s"   . 'switch-to-buffer)
-	      ("SPC b o"   . 'switch-to-buffer-other-window)
-	      ("SPC b i"   . 'ibuffer-other-window)
-	      ("SPC b e"   . 'eval-buffer)
-	      ("SPC b q"   . 'kill-this-buffer)
-	      ("SPC b k a" . 'kill-all-buffers)
-	      ("SPC b x"   . 'save-and-kill-buffer)
-	      ("SPC b r"   . 'revert-buffer-no-confirm)
+	      ("SPC b s"   . switch-to-buffer)
+	      ("SPC b o"   . switch-to-buffer-other-window)
+	      ("SPC b i"   . ibuffer-other-window)
+	      ("SPC b e"   . eval-buffer)
+	      ("SPC b q"   . kill-this-buffer)
+	      ("SPC b k a" . kill-all-buffers)
+	      ("SPC b x"   . save-and-kill-buffer)
+	      ("SPC b r"   . revert-buffer-no-confirm)
 
               ;; Prefix-f for 'find' commands
-	      ("SPC f r"   . 'icomplete-find-recent-file)
-	      ("SPC f o"   . 'find-file-other-window)
-	      ("SPC f f"   . 'find-file)
-	      ("SPC f l"   . 'find-library)
-	      ("SPC f m"   . 'man)
+	      ("SPC f r"   . icomplete-find-recent-file)
+	      ("SPC f o"   . find-file-other-window)
+	      ("SPC f f"   . find-file)
+	      ("SPC f l"   . find-library)
+	      ("SPC f c"   . luke/config)
+	      ("SPC f C"   . luke/config-other-window)
+	      ("SPC f m"   . man)
+
+              ;; Prefix-r for ripgrep or regex commands
+              ("SPC r s"    . rg)
 
               ;; Prefix-h for 'help' commands
-              ("SPC h"     . 'describe-symbol-at-point)
+              ("SPC h"     . describe-symbol-at-point)
 
               ;; prefix-e for 'error' commands
-              ("SPC e n"   . 'next-error)
-	      ("SPC e p"   . 'previous-error)
+              ("SPC e n"   . next-error)
+	      ("SPC e p"   . previous-error)
 
               ;; prefix-j for 'jump' commands
-              ("SPC j n"   . 'evil-jump-forward)
-              ("SPC j p"   . 'evil-jump-backward)
+              ("SPC j n"   . evil-jump-forward)
+              ("SPC j p"   . evil-jump-backward)
 
               ;; prefix-d for 'dired' commands
-              ("SPC d s"   . 'open-dired-in-side-window)
-              ("SPC d d"   . 'dired)
-              ("SPC d o"   . 'dired-other-window)
+              ("SPC d s"   . open-dired-in-side-window)
+              ("SPC d d"   . luke/dired)
+              ("SPC d o"   . dired-other-window)
 
               ;; Miscellaneous
-	      ("SPC SPC"   . 'find-file)
-	      ("SPC \r"    . 'open-terminal-in-default-directory)
-	      ("SPC o"     . 'occur)
-              ("<f5>"      . 'compile)
-	      (";"         . 'evil-ex)
+	      ("SPC SPC"   . find-file)
+	      ("SPC \r"    . open-terminal-in-default-directory)
+	      ("SPC o"     . occur)
+              ("<f5>"      . compile)
+	      (";"         . evil-ex)
 	      :map evil-insert-state-map
-	      ("C-j"       . 'jump-to-closing-paren)
-	      ("C-k"       . 'evil-normal-state)
+	      ("C-j"       . jump-to-closing-paren)
+	      ("C-k"       . evil-normal-state)
           )
 )
 
@@ -203,26 +202,27 @@
   :config
   (setq mode-line-percent-position nil)
   (setq-default mode-line-format
-                '("%e"
+                '(
+                  "%e"
                   mode-line-front-space
-                  (:eval
-                   (eyebrowse-mode-line-indicator))
                   " ["
                   (:eval
                    (cond
                     ((eq evil-state 'normal) "NORMAL")
                     ((eq evil-state 'visual) "VISUAL")
                     ((eq evil-state 'insert) "INSERT")))
-                   "] ["
-                   (:eval
-                    (if (buffer-modified-p) "%b | +" "%b"))
-                   "] "
-                   buffer-file-truename
-                   "  "
-                   buffer-mode
-                   "  "
-                   "%I "
-                   mode-line-end-spaces))
+                  "] ["
+                  (:eval
+                   (if (buffer-modified-p) "%b | +" "%b"))
+                  "] "
+                  buffer-file-truename
+                  "  "
+                  mode-name
+                  "  "
+                  vc-mode
+                  "  "
+                  "%I "
+                  mode-line-end-spaces))
 )
 
 (use-package org
@@ -274,6 +274,12 @@
   :hook ((occur-mode . occur-buffer-map))
 )
 
+(use-package rg
+  :ensure t
+  :config
+  (setq rg-group-result t)
+  )
+
 (use-package dired-subtree
   :ensure t
   :init (setq dired-subtree-line-prefix "--"))
@@ -301,11 +307,15 @@
     (display-buffer-in-side-window dir
                                    `((side . left)
                                      (slot . -1)
-                                     (window-width . 0.16)))
+                                     (window-width . 0.2)))
     (with-current-buffer dir
       (rename-buffer "*Dired-Side*"))
     (select-window (get-buffer-window "*Dired-Side*"))
   )
+
+  (defun luke/dired ()
+    (interactive)
+    (dired default-directory))
 
   :config
   (setq dired-recursive-copies 'always)
@@ -314,7 +324,6 @@
   (setq dired-listing-switches "-AFlv --group-directories-first")
   (setq dired-dwim-target t)
   :hook ((dired-mode . dired-hide-details-mode)
-	 (dired-mode . hl-line-mode)
 	 (dired-mode . dired-buffer-map))
 )
 
@@ -341,7 +350,13 @@
 (add-hook 'java-mode-hook 'java-custom-indent-settings)
 
 (use-package rust-mode
-  :ensure t)
+  :ensure t
+  :config
+  (defun luke/format-rust ()
+    (interactive)
+    (shell-command "cargo-fmt"))
+  :bind (:map evil-normal-state-map
+              ("SPC r f" . 'luke/format-rust)))
 
 ;; Recentf
 (use-package recentf
@@ -423,8 +438,14 @@ instead"
   (setq icomplete-with-completion-tables t)
   (setq icomplete-in-buffer t)
 
+  ;; `icomplete-vertical' does what it says on the tin mate.
+  ;; Bloody makes icomplete vertical.
+  (add-to-list 'load-path "~/.emacs.d/icomplete-vertical")
+  (require 'icomplete-vertical)
+
   (fido-mode -1)
   (icomplete-mode 1)
+  (icomplete-vertical-mode 1)
 
   (defun icomplete-find-recent-file ()
     (interactive)
@@ -440,13 +461,22 @@ instead"
     (setq-local completion-styles '(basic)))
 
   :bind (:map icomplete-minibuffer-map
-              ("<right>"  . icomplete-forward-completions)
-              ("J"        . icomplete-forward-completions)
-              ("<left>"   . icomplete-backward-completions)
-              ("K"        . icomplete-backward-completions)
-              ("C-f"      . luke/icomplete-toggle-basic)
-              ("<return>" . icomplete-fido-ret))
+              ("<right>"     . icomplete-forward-completions)
+              ("J"           . icomplete-forward-completions)
+              ("<left>"      . icomplete-backward-completions)
+              ("K"           . icomplete-backward-completions)
+              ("C-f"         . luke/icomplete-toggle-basic)
+              ("<backspace>" . icomplete-fido-backward-updir)
+              ("<return>"    . icomplete-fido-ret))
   )
+
+(use-package savehist
+  :config
+  (setq savehist-file "~/.emacs.d/savehist")
+  (setq history-length 30000)
+  (setq history-delete-duplicates nil)
+  (setq savehist-save-minibuffer-history t)
+  (savehist-mode 1))
 
 ;; Paren zone
 (electric-pair-mode 1)
@@ -462,10 +492,6 @@ instead"
     :ensure t)
 
   (defun modus-themes-toggle ()
-    "Simplistic toggle for my Modus Themes.  All it does is check
-if `modus-operandi' (light version) is active and if so switch to
-`modus-vivendi' (dark version).  Else it switches to the light
-theme."
     (interactive)
     (if (eq (car custom-enabled-themes) 'modus-operandi)
         (modus-vivendi)
