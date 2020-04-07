@@ -152,7 +152,9 @@
 	      ("SPC f m"   . man)
 
               ;; Prefix-r for ripgrep or regex commands
-              ("SPC r s"    . rg)
+              ("SPC r r"    . rg)
+              ("SPC r s"    . luke/rg-search-file)
+              ("SPC r d"    . luke/rg-search-directory)
 
               ;; Prefix-h for 'help' commands
               ("SPC h"     . describe-symbol-at-point)
@@ -166,14 +168,12 @@
               ("SPC j p"   . evil-jump-backward)
 
               ;; prefix-d for 'dired' commands
-              ("SPC d s"   . open-dired-in-side-window)
               ("SPC d d"   . luke/dired)
               ("SPC d o"   . dired-other-window)
 
               ;; Miscellaneous
 	      ("SPC SPC"   . find-file)
 	      ("SPC \r"    . open-terminal-in-default-directory)
-	      ("SPC o"     . occur)
               ("<f5>"      . compile)
 	      (";"         . evil-ex)
 	      :map evil-insert-state-map
@@ -225,15 +225,15 @@
                   mode-line-end-spaces))
 )
 
+;; TODO: Figure out how to remap list promotion keys so that they work right
 (use-package org
   :init
   (defun org-buffer-map ()
-    (define-key evil-insert-state-local-map (kbd "M-h") 'org-do-promote)
-    (define-key evil-insert-state-local-map (kbd "M-l") 'org-do-demote)
+    (define-key evil-insert-state-local-map (kbd "M-s") 'org-insert-structure-template)
     (define-key evil-normal-state-local-map (kbd "C-u") 'outline-up-heading)
     (define-key evil-normal-state-local-map (kbd "C-j") 'org-next-visible-heading)
     (define-key evil-normal-state-local-map (kbd "C-k") 'org-previous-visible-heading)
-    (define-key evil-normal-state-local-map (kbd "SPC s w") 'flyspell-correct-word-before-point)
+    (define-key evil-normal-state-local-map (kbd "SPC s w") 'flyspell-auto-correct-word)
     (define-key xah-math-input-keymap (kbd "S-SPC") nil)
     (define-key xah-math-input-keymap (kbd "<f1>") 'xah-math-input-change-to-symbol)
     (xah-math-input-mode 1)
@@ -277,12 +277,19 @@
 (use-package rg
   :ensure t
   :config
-  (setq rg-group-result t)
-  )
+  (rg-define-search luke/rg-search-directory
+    :query ask
+    :format regexp
+    :files current
+    :dir current)
 
-(use-package dired-subtree
-  :ensure t
-  :init (setq dired-subtree-line-prefix "--"))
+  (rg-define-search luke/rg-search-file
+    :query ask
+    :format regexp
+    :files (file-name-nondirectory (buffer-file-name))
+    :dir current)
+
+  (setq rg-group-result t))
 
 (use-package dired
   :init
@@ -290,28 +297,12 @@
     "Setup bindings for dired buffer."
     (interactive)
     (local-unset-key (kbd "SPC"))
-    (define-key evil-normal-state-local-map "l" 'dired-subtree-insert)
-    (define-key evil-normal-state-local-map "h" 'dired-subtree-remove)
+    (define-key evil-normal-state-local-map (kbd "<backspace>") 'dired-up-directory)
     (define-key evil-normal-state-local-map "q" 'kill-this-buffer)
     (define-key evil-normal-state-local-map "c" 'dired-do-copy)
     (define-key evil-normal-state-local-map "r" 'dired-do-rename)
     (define-key evil-normal-state-local-map "C" 'dired-do-compress-to)
-    (define-key evil-normal-state-local-map (kbd "\r") 'dired-find-file)
-    (define-key evil-normal-state-local-map (kbd "TAB") 'dired-subtree-cycle)
-    (define-key evil-normal-state-local-map (kbd "C-j") 'dired-subtree-down)
-    (define-key evil-normal-state-local-map (kbd "C-k") 'dired-subtree-up))
-
-  (defun open-dired-in-side-window ()
-    (interactive)
-    (setq dir (if (eq (vc-root-dir) nil) (dired-noselect default-directory) (dired-noselect (vc-root-dir))))
-    (display-buffer-in-side-window dir
-                                   `((side . left)
-                                     (slot . -1)
-                                     (window-width . 0.2)))
-    (with-current-buffer dir
-      (rename-buffer "*Dired-Side*"))
-    (select-window (get-buffer-window "*Dired-Side*"))
-  )
+    (define-key evil-normal-state-local-map (kbd "\r") 'dired-find-file))
 
   (defun luke/dired ()
     (interactive)
@@ -349,6 +340,10 @@
 
 (add-hook 'java-mode-hook 'java-custom-indent-settings)
 
+(defun luke/switch-source-header ()
+  (interactive)
+  (if (eq (cdr (split-string buffer-string)))))
+
 (use-package rust-mode
   :ensure t
   :config
@@ -377,7 +372,7 @@
   (setq completion-pcm-complete-word-inserts-delimiters t)
   (setq completion-pcm-word-delimiters "-_./:| ")
   (setq completion-show-help nil)
-  (setq completion-styles '(initials flex))
+  (setq completion-styles '(flex))
   (setq completions-format 'vertical)
   (setq enable-recursive-minibuffers t)
   (setq read-answer-short t)
@@ -438,14 +433,8 @@ instead"
   (setq icomplete-with-completion-tables t)
   (setq icomplete-in-buffer t)
 
-  ;; `icomplete-vertical' does what it says on the tin mate.
-  ;; Bloody makes icomplete vertical.
-  (add-to-list 'load-path "~/.emacs.d/icomplete-vertical")
-  (require 'icomplete-vertical)
-
   (fido-mode -1)
   (icomplete-mode 1)
-  (icomplete-vertical-mode 1)
 
   (defun icomplete-find-recent-file ()
     (interactive)
@@ -467,6 +456,8 @@ instead"
               ("K"           . icomplete-backward-completions)
               ("C-f"         . luke/icomplete-toggle-basic)
               ("<backspace>" . icomplete-fido-backward-updir)
+              ("<tab>"       . icomplete-forward-completions)
+              ("<M-return>"  . icomplete-force-complete-and-exit)
               ("<return>"    . icomplete-fido-ret))
   )
 
