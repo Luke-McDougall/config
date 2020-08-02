@@ -57,12 +57,19 @@ function f {
 # Video explaining the weird syntax incase I forget it.
 # https://www.youtube.com/watch?v=QXineadwG4E
 function cf {
-    # pushd and popd are used so that if DIR is invalid you are not moved into the home directory
-    pushd $HOME > /dev/null
-    RESULT="$HOME/`fzf --prompt='Change to dir containing: '`"
-    DIR=${RESULT%/*}
-    popd > /dev/null
-    [ -d $DIR ] && cd $DIR
+    cd $HOME
+    SUFFIX=`fzf --prompt='Change to dir containing: '`
+    
+    # Exit code of 130 means I didn't choose anything and therefore want to stay in my current directory
+    if [ $? -eq 130 ]; then 
+        cd - > /dev/null
+        return
+    fi
+
+    # I need this intermediate variable so that switching to $HOME works
+    # If you forget why this is necessary dude just trust me
+    DIR="$HOME/$SUFFIX"
+    cd ${DIR%/*}
 }
 
 export LESS_TERMCAP_mb=$'\e[1;32m'
