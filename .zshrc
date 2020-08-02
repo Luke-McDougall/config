@@ -73,8 +73,7 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 
-export PLAN9=/usr/local/plan9
-export PATH="/home/luke/.cask/bin:$PATH:/home/luke/scripts:/home/luke/.cargo/bin:$PLAN9/bin"
+export PATH="/home/luke/.cargo/bin:/home/luke/.cask/bin:$PATH"
 export TERMINAL="alacritty"
 export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border"
 export FZF_DEFAULT_COMMAND="rg --files"
