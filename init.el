@@ -45,6 +45,11 @@
   (forward-char 1)
 )
 
+(defun luke/create-and-edit-file ()
+  (interactive)
+  (find-file)
+  (setq-local completion-styles '(basic)))
+
 (defun save-and-kill-buffer ()
   "Pretty self explanatory dude."
   (interactive)
@@ -67,10 +72,6 @@
   :config
   (setq auto-revert-verbose t)
   :hook (after-init . global-auto-revert-mode))
-
-(defun revert-buffer-no-confirm ()
-  (interactive)
-  (revert-buffer nil t nil))
 
 ;; Evil-mode
 (use-package evil
@@ -95,11 +96,13 @@
 
   (advice-add 'evil-next-line :after #'luke/nohighlight)
   
-  ;; It annoys me that I have to switch to the occur buffer manually
-  (defun switch-to-window-occur (&rest _)
-    (select-window (get-buffer-window "*Occur*")))
+  ;; It annoys me that I have to switch to the rg buffer manually
+  (defun switch-to-window-rg (&rest _)
+    (select-window (get-buffer-window "*rg*")))
 
-  (advice-add 'occur :after #'switch-to-window-occur)
+  (advice-add 'rg :after #'switch-to-window-rg)
+  (advice-add 'luke/rg-search-file :after #'switch-to-window-rg)
+  (advice-add 'luke/rg-search-directory :after #'switch-to-window-rg)
 
   :config 
   (defun luke/config ()
@@ -111,6 +114,7 @@
     (find-file-other-window "~/.emacs.d/init.el"))
 
   (evil-ex-define-cmd "config" 'luke/config)
+  (evil-ex-define-cmd "format" 'luke/format-rust)
 
   (evil-mode 1)
   :bind (:map evil-normal-state-map
@@ -140,7 +144,6 @@
 	      ("SPC b q"   . kill-this-buffer)
 	      ("SPC b k a" . kill-all-buffers)
 	      ("SPC b x"   . save-and-kill-buffer)
-	      ("SPC b r"   . revert-buffer-no-confirm)
 
               ;; Prefix-f for 'find' commands
 	      ("SPC f r"   . icomplete-find-recent-file)
@@ -151,9 +154,12 @@
 	      ("SPC f C"   . luke/config-other-window)
 	      ("SPC f m"   . man)
 
+              ;; Prefix-o for org commands
+              ("SPC o t"    . org-todo-list)
+              
               ;; Prefix-r for ripgrep or regex commands
               ("SPC r r"    . rg)
-              ("SPC r s"    . luke/rg-search-file)
+              ("SPC r f"    . luke/rg-search-file)
               ("SPC r d"    . luke/rg-search-directory)
 
               ;; Prefix-h for 'help' commands
@@ -176,9 +182,14 @@
 	      ("SPC \r"    . open-terminal-in-default-directory)
               ("<f5>"      . compile)
 	      (";"         . evil-ex)
+
 	      :map evil-insert-state-map
 	      ("C-j"       . jump-to-closing-paren)
 	      ("C-k"       . evil-normal-state)
+
+              :map evil-visual-state-map
+	      ("H"         . evil-first-non-blank-of-visual-line)
+	      ("L"         . evil-end-of-visual-line)
           )
 )
 
@@ -238,8 +249,10 @@
     (define-key xah-math-input-keymap (kbd "<f1>") 'xah-math-input-change-to-symbol)
     (xah-math-input-mode 1)
     (auto-fill-mode 1)
-    (flyspell-mode 1)
-  )
+    (flyspell-mode 1))
+
+  (setq-default org-agenda-files '("~/org_agenda"))
+
   :hook ((org-mode . org-buffer-map))
 )
 
@@ -350,8 +363,7 @@
   (defun luke/format-rust ()
     (interactive)
     (shell-command "cargo-fmt"))
-  :bind (:map evil-normal-state-map
-              ("SPC r f" . 'luke/format-rust)))
+  )
 
 ;; Recentf
 (use-package recentf
