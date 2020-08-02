@@ -12,25 +12,57 @@ zmodload zsh/complist
 compinit
 _comp_options+=(globdots)
 
-alias rel='cargo run --release'
-alias ls='exa  --sort=extension --group-directories-first --color=always'
-alias c=clear
-alias vim=nvim
-alias build=./build
-alias run=./run
-alias f='nvim $(fzf)'
-alias cf=". cf"
-alias tis="zathura /home/luke/.local/share/Steam/steamapps/common/TIS-100/TIS-100\ Reference\ Manual.pdf &"
-alias 4="~/4coder/./4ed &"
-alias g="~/scripts/./games.sh"
-alias gc="git clone https://github.com/Luke-McDougall/"
+# vi mode
+bindkey -v
+export KEYTIMEOUT=1
 
-function i3c {
-    vim ~/.config/i3/config
+# Use vim keys in tab complete menu
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'j' vi-down-line-or-history
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+
+function zle-keymap-select {
+  if [[ ${KEYMAP} == vicmd ]] ||
+     [[ $1 = 'block' ]]; then
+    echo -ne '\e[1 q'
+  elif [[ ${KEYMAP} == main ]] ||
+       [[ ${KEYMAP} == viins ]] ||
+       [[ ${KEYMAP} = '' ]] ||
+       [[ $1 = 'beam' ]]; then
+    echo -ne '\e[5 q'
+  fi
 }
+
+zle -N zle-keymap-select
+
+alias l='exa  --sort=extension --group-directories-first --color=always'
+alias lt='exa  --sort=extension --group-directories-first --color=always -T'
+alias c=clear
+alias calc='python -i ~/python/calculator/calc.py'
+alias vim=nvim
+alias tis="mupdf /home/luke/.local/share/Steam/steamapps/common/TIS-100/TIS-100\ Reference\ Manual.pdf &"
+alias g="~/scripts/games.sh"
+alias pi="pacman -Slq | fzf -m --preview 'cat <(pacman -Si {1}) <(pacman -Fl {1} | awk \"{print \$2}\")' | xargs -ro sudo pacman -S"
 
 function mpdf {
     gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=$3 $1 $2
+}
+
+function f {
+    FILE=`fzf --prompt='Edit file: ' --preview 'head -n $LINES {}'`
+    [ -f "$FILE" ] && nvim "$FILE"
+}
+
+# Video explaining the weird syntax incase I forget it.
+# https://www.youtube.com/watch?v=QXineadwG4E
+function cf {
+    # pushd and popd are used so that if DIR is invalid you are not moved into the home directory
+    pushd $HOME > /dev/null
+    RESULT="$HOME/`fzf --prompt='Change to dir containing: '`"
+    DIR=${RESULT%/*}
+    popd > /dev/null
+    [ -d $DIR ] && cd $DIR
 }
 
 export LESS_TERMCAP_mb=$'\e[1;32m'
@@ -41,7 +73,9 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 
-export PATH="$PATH:/home/luke/scripts:/home/luke/.cargo/bin"
+export PLAN9=/usr/local/plan9
+export PATH="/home/luke/.cask/bin:$PATH:/home/luke/scripts:/home/luke/.cargo/bin:$PLAN9/bin"
+export TERMINAL="alacritty"
 export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border"
 export FZF_DEFAULT_COMMAND="rg --files"
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 
